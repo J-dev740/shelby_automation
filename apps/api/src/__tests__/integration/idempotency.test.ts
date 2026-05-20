@@ -9,7 +9,7 @@ describe('Idempotency Layer Integration', () => {
   it('B1: First request → Executes & Caches', async () => {
     const key = `test:b1:${Date.now()}`;
     let executed = false;
-    const result = await withIdempotency(key, 'test', async () => {
+    const result = await withIdempotency(key, 'webhook', async () => {
       executed = true;
       return { success: true };
     });
@@ -25,8 +25,8 @@ describe('Idempotency Layer Integration', () => {
       return { count: executeCount };
     };
 
-    const res1 = await withIdempotency(key, 'test', action);
-    const res2 = await withIdempotency(key, 'test', action);
+    const res1 = await withIdempotency(key, 'webhook', action);
+    const res2 = await withIdempotency(key, 'webhook', action);
 
     expect(executeCount).toBe(1);
     expect(res1.count).toBe(1);
@@ -43,9 +43,9 @@ describe('Idempotency Layer Integration', () => {
     };
 
     const promises = [
-      withIdempotency(key, 'test', action),
-      withIdempotency(key, 'test', action),
-      withIdempotency(key, 'test', action)
+      withIdempotency(key, 'webhook', action),
+      withIdempotency(key, 'webhook', action),
+      withIdempotency(key, 'webhook', action)
     ];
 
     const results = await Promise.all(promises);

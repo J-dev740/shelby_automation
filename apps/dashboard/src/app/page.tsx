@@ -154,18 +154,6 @@ export default function Dashboard() {
         password
       });
 
-      // 2. If user doesn't exist in auth.users (common in local docker seed), auto signup
-      if (signInError && signInError.message.includes('Invalid login credentials')) {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password
-        });
-        if (!signUpError && signUpData?.user) {
-          authData = { user: signUpData.user as any, session: signUpData.session as any };
-          signInError = null;
-        }
-      }
-
       if (!signInError && authData?.session?.user) {
         const { data: staffUser } = await supabase
           .from('staff_users')
@@ -336,9 +324,31 @@ export default function Dashboard() {
 
       // Optimistic update
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, state: newState, updated_at: new Date().toISOString() } : o));
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder(prev => prev ? { ...prev, state: newState } : null);
+      }
     } catch (err) {
       console.error('Failed to update order status:', err);
       alert('Failed to update order status');
+    }
+  };
+
+  const markOrderPaid = async (orderId: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ payment_status: 'paid', payment_mode: 'cash', updated_at: new Date().toISOString() })
+        .eq('id', orderId);
+
+      if (error) throw error;
+      
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, payment_status: 'paid', payment_mode: 'cash', updated_at: new Date().toISOString() } : o));
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder(prev => prev ? { ...prev, payment_status: 'paid', payment_mode: 'cash' } : null);
+      }
+    } catch (err) {
+      console.error('Failed to mark order paid:', err);
+      alert('Failed to mark order paid');
     }
   };
 
@@ -452,24 +462,26 @@ export default function Dashboard() {
             </button>
           </form>
 
-          <div className="pt-6 border-t border-zinc-800 text-center">
-            <p className="text-xs text-zinc-500 mb-2">Demo Environment Credentials:</p>
-            <div className="flex justify-center gap-4 text-xs">
-              <button 
-                onClick={() => { setEmail('admin@shelby.local'); setPassword('password123'); }}
-                className="text-amber-400/80 hover:text-amber-300 underline font-mono"
-              >
-                admin@shelby.local
-              </button>
-              <span className="text-zinc-700">•</span>
-              <button 
-                onClick={() => { setEmail('barista@shelby.local'); setPassword('password123'); }}
-                className="text-amber-400/80 hover:text-amber-300 underline font-mono"
-              >
-                barista@shelby.local
-              </button>
+          {process.env.NODE_ENV !== 'production' && (
+            <div className="pt-6 border-t border-zinc-800 text-center">
+              <p className="text-xs text-zinc-500 mb-2">Demo Environment Credentials:</p>
+              <div className="flex justify-center gap-4 text-xs">
+                <button 
+                  onClick={() => { setEmail('admin@shelby.local'); setPassword('password123'); }}
+                  className="text-amber-400/80 hover:text-amber-300 underline font-mono"
+                >
+                  admin@shelby.local
+                </button>
+                <span className="text-zinc-700">•</span>
+                <button 
+                  onClick={() => { setEmail('barista@shelby.local'); setPassword('password123'); }}
+                  className="text-amber-400/80 hover:text-amber-300 underline font-mono"
+                >
+                  barista@shelby.local
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
@@ -492,572 +504,231 @@ export default function Dashboard() {
   // RENDER: MAIN DASHBOARD
   // ---------------------------------------------------------------------------
   return (
-    <div className="flex min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-amber-500 selection:text-zinc-950">
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-zinc-900/80 border-r border-zinc-800/80 flex flex-col justify-between backdrop-blur-xl z-20 flex-shrink-0">
-        <div className="p-6 space-y-8">
-          {/* Brand */}
-          <div className="flex items-center gap-3">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 shadow-md shadow-amber-500/20">
-              <ChefHat className="h-6 w-6 text-zinc-950" />
-            </div>
-            <div>
-              <h1 className="font-bold text-white tracking-tight leading-none">Shelby OS</h1>
-              <span className="text-[10px] font-medium uppercase tracking-wider text-amber-400">Phygital Kitchen</span>
-            </div>
+    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-amber-500 selection:text-zinc-950 overflow-hidden">
+      {/* TOP BAR */}
+      <header className="h-16 border-b border-zinc-800/80 px-4 md:px-6 flex items-center justify-between backdrop-blur-md bg-zinc-950/80 z-10 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-amber-500 to-amber-300 shadow-sm shadow-amber-500/20">
+            <ChefHat className="h-5 w-5 text-zinc-950" />
           </div>
-
-          {/* Nav */}
-          <nav className="space-y-2">
-            <button
-              onClick={() => setActiveTab('kanban')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                activeTab === 'kanban' 
-                  ? 'bg-gradient-to-r from-amber-500/10 to-amber-500/5 text-amber-400 border border-amber-500/20 shadow-sm' 
-                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              }`}
-            >
-              <LayoutDashboard className="h-5 w-5" />
-              <span>Kanban Board</span>
-              {orders.filter(o => o.state === 'new').length > 0 && (
-                <span className="ml-auto bg-amber-500 text-zinc-950 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
-                  {orders.filter(o => o.state === 'new').length}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('handoff')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                activeTab === 'handoff' 
-                  ? 'bg-gradient-to-r from-amber-500/10 to-amber-500/5 text-amber-400 border border-amber-500/20 shadow-sm' 
-                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              }`}
-            >
-              <MessageSquare className="h-5 w-5" />
-              <span>Active Handoffs</span>
-              {handoffSessions.length > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-bounce">
-                  {handoffSessions.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                activeTab === 'settings' 
-                  ? 'bg-gradient-to-r from-amber-500/10 to-amber-500/5 text-amber-400 border border-amber-500/20 shadow-sm' 
-                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              }`}
-            >
-              <SettingsIcon className="h-5 w-5" />
-              <span>System Settings</span>
-              {currentUser?.role === 'admin' && (
-                <span className="ml-auto bg-zinc-800 text-zinc-400 border border-zinc-700 text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded">
-                  Admin
-                </span>
-              )}
-            </button>
-          </nav>
-        </div>
-
-        {/* User / Footer */}
-        <div className="p-6 border-t border-zinc-800/80 space-y-4 bg-zinc-900/40">
-          <div className="flex items-center justify-between">
-            {/* Heartbeat Status */}
-            <div className="flex items-center gap-2">
-              <div className={`h-2.5 w-2.5 rounded-full ${
-                heartbeatStatus === 'online' ? 'bg-emerald-500 animate-pulse' :
-                heartbeatStatus === 'warning' ? 'bg-amber-500 animate-ping' : 'bg-red-500'
-              }`} />
-              <span className="text-xs font-medium text-zinc-400 capitalize">
-                {heartbeatStatus}
-              </span>
-            </div>
-            <span className="text-[10px] text-zinc-500 font-mono">
-              {lastHeartbeat.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 pt-2">
-            <div className="h-9 w-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-amber-400 font-bold text-sm uppercase">
-              {currentUser.email.charAt(0)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{currentUser.email}</p>
-              <p className="text-xs text-zinc-400 capitalize">{currentUser.role} Role</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
-              title="Logout"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
+          <div>
+            <h1 className="font-bold text-white tracking-tight leading-none text-lg">Shelby OS</h1>
+            <span className="text-[9px] font-medium uppercase tracking-wider text-amber-400">Kitchen Dashboard</span>
           </div>
         </div>
-      </aside>
-
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-zinc-950/50">
-        {/* TOP BAR */}
-        <header className="h-20 border-b border-zinc-800/80 px-8 flex items-center justify-between backdrop-blur-md sticky top-0 z-10 bg-zinc-950/80">
-          <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold text-white tracking-tight capitalize">
-              {activeTab === 'kanban' ? 'Live Kitchen Kanban' : activeTab === 'handoff' ? 'Staff Handoff Queue' : 'System Parameters'}
-            </h2>
-            {loadingData && (
-              <RefreshCw className="h-5 w-5 text-amber-500 animate-spin" />
-            )}
-          </div>
-
-          {/* Quick Controls / Status Alerts */}
-          <div className="flex items-center gap-4">
-            {settings.digital_lane_paused && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold animate-pulse">
-                <Power className="h-4 w-4" />
-                <span>Digital Lane Paused (Kill Switch Active)</span>
-              </div>
-            )}
-            {settings.rain_protocol_active && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
-                <CloudRain className="h-4 w-4" />
-                <span>Rain Protocol Active</span>
-              </div>
-            )}
-
-            {/* Search Bar for Kanban */}
-            {activeTab === 'kanban' && (
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="text"
-                  placeholder="Search orders, phone..."
-                  className="w-full rounded-full bg-zinc-900 border border-zinc-800 pl-9 pr-4 py-2 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* TAB 1: KANBAN BOARD */}
-        {activeTab === 'kanban' && (
-          <div className="p-8 flex-1 flex flex-col min-h-0">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 flex-1 items-start">
-              {/* COLUMN 1: PENDING (new) */}
-              <div className="flex flex-col rounded-2xl bg-zinc-900/60 border border-zinc-800/80 p-4 max-h-full overflow-y-auto backdrop-blur-sm shadow-lg">
-                <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-amber-500" />
-                    <h3 className="font-bold text-white text-base tracking-tight">Pending</h3>
-                  </div>
-                  <span className="bg-zinc-800 text-zinc-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                    {getKanbanOrders('new').length}
-                  </span>
-                </div>
-                <div className="space-y-4 flex-1">
-                  {getKanbanOrders('new').map(order => (
-                    <OrderCard 
-                      key={order.id} 
-                      order={order} 
-                      onAction={() => updateOrderStatus(order.id, 'accepted')} 
-                      actionLabel="Accept Order"
-                      actionColor="from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400"
-                      onClick={() => setSelectedOrder(order)}
-                    />
-                  ))}
-                  {getKanbanOrders('new').length === 0 && (
-                    <p className="text-center text-xs text-zinc-500 py-8 font-medium">No pending orders</p>
-                  )}
-                </div>
-              </div>
-
-              {/* COLUMN 2: ACCEPTED */}
-              <div className="flex flex-col rounded-2xl bg-zinc-900/60 border border-zinc-800/80 p-4 max-h-full overflow-y-auto backdrop-blur-sm shadow-lg">
-                <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-blue-500" />
-                    <h3 className="font-bold text-white text-base tracking-tight">Accepted</h3>
-                  </div>
-                  <span className="bg-zinc-800 text-zinc-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                    {getKanbanOrders('accepted').length}
-                  </span>
-                </div>
-                <div className="space-y-4 flex-1">
-                  {getKanbanOrders('accepted').map(order => (
-                    <OrderCard 
-                      key={order.id} 
-                      order={order} 
-                      onAction={() => updateOrderStatus(order.id, 'preparing')} 
-                      actionLabel="Start Preparing"
-                      actionColor="from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400"
-                      onClick={() => setSelectedOrder(order)}
-                    />
-                  ))}
-                  {getKanbanOrders('accepted').length === 0 && (
-                    <p className="text-center text-xs text-zinc-500 py-8 font-medium">No accepted orders</p>
-                  )}
-                </div>
-              </div>
-
-              {/* COLUMN 3: PREPARING */}
-              <div className="flex flex-col rounded-2xl bg-zinc-900/60 border border-zinc-800/80 p-4 max-h-full overflow-y-auto backdrop-blur-sm shadow-lg">
-                <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-purple-500" />
-                    <h3 className="font-bold text-white text-base tracking-tight">Preparing</h3>
-                  </div>
-                  <span className="bg-zinc-800 text-zinc-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                    {getKanbanOrders('preparing').length}
-                  </span>
-                </div>
-                <div className="space-y-4 flex-1">
-                  {getKanbanOrders('preparing').map(order => (
-                    <OrderCard 
-                      key={order.id} 
-                      order={order} 
-                      onAction={() => updateOrderStatus(order.id, 'ready')} 
-                      actionLabel="Mark Ready"
-                      actionColor="from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400"
-                      onClick={() => setSelectedOrder(order)}
-                    />
-                  ))}
-                  {getKanbanOrders('preparing').length === 0 && (
-                    <p className="text-center text-xs text-zinc-500 py-8 font-medium">No orders in preparation</p>
-                  )}
-                </div>
-              </div>
-
-              {/* COLUMN 4: READY */}
-              <div className="flex flex-col rounded-2xl bg-zinc-900/60 border border-zinc-800/80 p-4 max-h-full overflow-y-auto backdrop-blur-sm shadow-lg">
-                <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-emerald-500" />
-                    <h3 className="font-bold text-white text-base tracking-tight">Ready for Pickup</h3>
-                  </div>
-                  <span className="bg-zinc-800 text-zinc-300 text-xs font-bold px-2.5 py-1 rounded-full">
-                    {getKanbanOrders('ready').length}
-                  </span>
-                </div>
-                <div className="space-y-4 flex-1">
-                  {getKanbanOrders('ready').map(order => (
-                    <OrderCard 
-                      key={order.id} 
-                      order={order} 
-                      onAction={() => updateOrderStatus(order.id, 'completed')} 
-                      actionLabel="Complete Order"
-                      actionColor="from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500"
-                      onClick={() => setSelectedOrder(order)}
-                    />
-                  ))}
-                  {getKanbanOrders('ready').length === 0 && (
-                    <p className="text-center text-xs text-zinc-500 py-8 font-medium">No orders waiting pickup</p>
-                  )}
-                </div>
-              </div>
+        
+        {/* Status & Quick Controls */}
+        <div className="flex items-center gap-3 md:gap-4">
+          {loadingData && <RefreshCw className="h-4 w-4 text-amber-500 animate-spin" />}
+          {settings.digital_lane_paused && (
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold animate-pulse">
+              <Power className="h-3.5 w-3.5" />
+              <span>Kill Switch On</span>
             </div>
+          )}
+          <div className="hidden md:flex items-center gap-2 px-3 border-l border-zinc-800">
+            <div className={`h-2 w-2 rounded-full ${heartbeatStatus === 'online' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+            <span className="text-xs text-zinc-400 font-mono">{lastHeartbeat.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           </div>
-        )}
+          <button onClick={() => setActiveTab(activeTab === 'settings' ? 'kanban' : 'settings')} className={`p-1.5 rounded-lg transition-colors border ${activeTab === 'settings' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>
+            <SettingsIcon className="h-4 w-4" />
+          </button>
+          <button onClick={handleLogout} className="p-1.5 border border-transparent text-zinc-400 hover:text-red-400 hover:bg-zinc-800 rounded-lg transition-colors">
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </header>
 
-        {/* TAB 2: ACTIVE HANDOFFS */}
-        {activeTab === 'handoff' && (
-          <div className="p-8 max-w-5xl mx-auto w-full space-y-6">
-            <div className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 p-6 rounded-2xl backdrop-blur-sm shadow-lg">
-              <div>
-                <h3 className="text-lg font-bold text-white tracking-tight">Customer Handoff Requests</h3>
-                <p className="text-sm text-zinc-400 mt-1">
-                  Customers who clicked &quot;Talk to Staff&quot;. The automated bot is paused for these sessions.
-                </p>
+      {/* MAIN BENTO GRID */}
+      <main className="flex-1 p-2 md:p-4 overflow-hidden flex relative">
+        {activeTab === 'settings' ? (
+          <SettingsPanel settings={settings} updateSetting={updateSetting} currentUser={currentUser} />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 w-full h-full max-h-full">
+            {/* ACTION CENTER (col-span-8) */}
+            <section className="lg:col-span-8 flex flex-col bg-zinc-900/30 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-lg">
+              <div className="p-3 md:p-4 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-900/50">
+                <h2 className="font-bold text-white tracking-tight flex items-center gap-2 text-sm md:text-base">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  Action Center
+                </h2>
+                <div className="flex gap-2">
+                  {handoffSessions.length > 0 && (
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md animate-pulse">
+                      {handoffSessions.length} Handoffs
+                    </span>
+                  )}
+                  <span className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    {getKanbanOrders('new').length + getKanbanOrders('accepted').length} New
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl text-red-400 font-semibold text-sm">
-                <AlertTriangle className="h-5 w-5" />
-                <span>{handoffSessions.length} Active Requests</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {handoffSessions.map(session => (
-                <div key={session.id} className="bg-zinc-900/60 border border-zinc-800 p-6 rounded-2xl space-y-6 backdrop-blur-sm shadow-lg hover:border-zinc-700 transition-all flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                          <User className="h-6 w-6" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-white text-base">
-                            {session.customers?.display_name || session.customers?.phone_e164}
-                          </h4>
-                          <p className="text-xs text-zinc-400 font-mono">{session.customers?.phone_e164}</p>
-                        </div>
-                      </div>
-                      <span className="bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>Waiting</span>
-                      </span>
-                    </div>
-
-                    <div className="bg-zinc-950/50 rounded-xl p-4 border border-zinc-800/80 space-y-2">
-                      <div className="flex justify-between text-xs text-zinc-400">
-                        <span>Last Activity:</span>
-                        <span className="font-mono text-white">
-                          {new Date(session.last_activity_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs text-zinc-400">
-                        <span>Session State:</span>
-                        <span className="font-mono text-amber-400 font-semibold">{session.state}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 pt-4 border-t border-zinc-800">
-                    <a
-                      href={`https://wa.me/${session.customers?.phone_e164.replace('+', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 py-3 px-4 text-center font-semibold text-white text-sm transition-all flex items-center justify-center gap-2 border border-zinc-700"
-                    >
-                      <Phone className="h-4 w-4 text-emerald-400" />
-                      <span>Open WhatsApp</span>
-                    </a>
-                    <button
-                      onClick={() => resolveHandoff(session.id)}
-                      className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 py-3 px-4 text-center font-semibold text-zinc-950 text-sm shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-amber-300 transition-all flex items-center justify-center gap-2"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>Resolve & Resume Bot</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {handoffSessions.length === 0 && (
-                <div className="col-span-full bg-zinc-900/30 border border-zinc-800/80 p-12 rounded-2xl text-center space-y-4">
-                  <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto" />
-                  <div>
-                    <h4 className="text-lg font-bold text-white">All Clear!</h4>
-                    <p className="text-sm text-zinc-500 mt-1">No active customer handoff requests pending.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: SYSTEM SETTINGS */}
-        {activeTab === 'settings' && (
-          <div className="p-8 max-w-4xl mx-auto w-full space-y-8">
-            <div className="bg-zinc-900/60 border border-zinc-800 p-8 rounded-3xl backdrop-blur-sm shadow-lg space-y-8">
-              <div className="flex items-center justify-between pb-6 border-b border-zinc-800">
-                <div>
-                  <h3 className="text-xl font-bold text-white tracking-tight">Kitchen Operating Parameters</h3>
-                  <p className="text-sm text-zinc-400 mt-1">Configure real-time automation thresholds and emergency overrides.</p>
-                </div>
-                {currentUser?.role !== 'admin' && (
-                  <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-xl text-amber-400 text-xs font-semibold">
-                    <ShieldAlert className="h-4 w-4" />
-                    <span>View Only (Admin Required)</span>
-                  </div>
+              <div className="flex-1 overflow-y-auto p-2 md:p-4 space-y-2 md:space-y-3">
+                {handoffSessions.map(session => (
+                   <HandoffRow key={session.id} session={session} onResolve={() => resolveHandoff(session.id)} />
+                ))}
+                {getKanbanOrders('new').map(order => (
+                   <OrderRow key={order.id} order={order} onAction={() => updateOrderStatus(order.id, 'accepted')} actionLabel="Accept" actionColor="bg-amber-500 hover:bg-amber-400 text-zinc-950" onClick={() => setSelectedOrder(order)} />
+                ))}
+                {getKanbanOrders('accepted').map(order => (
+                   <OrderRow key={order.id} order={order} onAction={() => updateOrderStatus(order.id, 'preparing')} actionLabel="Start Prep" actionColor="bg-blue-500 hover:bg-blue-400 text-white" onClick={() => setSelectedOrder(order)} />
+                ))}
+                {handoffSessions.length === 0 && getKanbanOrders('new').length === 0 && getKanbanOrders('accepted').length === 0 && (
+                   <div className="flex flex-col items-center justify-center h-full text-zinc-500 space-y-2 py-12">
+                     <CheckCircle2 className="h-8 w-8 text-zinc-700" />
+                     <p className="text-sm font-medium">No pending actions. All caught up!</p>
+                   </div>
                 )}
               </div>
+            </section>
 
-              <div className="space-y-8">
-                {/* Kill Switch */}
-                <div className="flex items-center justify-between p-6 rounded-2xl bg-zinc-950/50 border border-zinc-800/80 hover:border-zinc-700 transition-all">
-                  <div className="space-y-1 max-w-md">
-                    <div className="flex items-center gap-2.5">
-                      <Power className={`h-5 w-5 ${settings.digital_lane_paused ? 'text-red-500 animate-pulse' : 'text-zinc-500'}`} />
-                      <h4 className="font-bold text-white text-base">Digital Lane Paused (Kill Switch)</h4>
-                    </div>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
-                      Instantly stops accepting new WhatsApp orders. Customers are prompted to order directly at the walk-up window.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => updateSetting('digital_lane_paused', !settings.digital_lane_paused)}
-                    disabled={currentUser?.role !== 'admin'}
-                    className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors focus:outline-none ${
-                      settings.digital_lane_paused ? 'bg-red-500' : 'bg-zinc-700'
-                    } ${currentUser?.role !== 'admin' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                  >
-                    <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                      settings.digital_lane_paused ? 'translate-x-9' : 'translate-x-1'
-                    }`} />
-                  </button>
+            {/* TRACKING STACK (col-span-4) */}
+            <section className="lg:col-span-4 flex flex-col gap-3 md:gap-4 h-full">
+              {/* Preparing */}
+              <div className="flex-1 flex flex-col bg-zinc-900/30 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-lg min-h-[250px]">
+                <div className="p-3 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-900/50">
+                  <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                    <ChefHat className="h-4 w-4 text-purple-500" /> Preparing
+                  </h3>
+                  <span className="text-xs text-zinc-400 font-mono bg-zinc-800 px-2 py-0.5 rounded-md">{getKanbanOrders('preparing').length}</span>
                 </div>
-
-                {/* Rain Protocol */}
-                <div className="flex items-center justify-between p-6 rounded-2xl bg-zinc-950/50 border border-zinc-800/80 hover:border-zinc-700 transition-all">
-                  <div className="space-y-1 max-w-md">
-                    <div className="flex items-center gap-2.5">
-                      <CloudRain className={`h-5 w-5 ${settings.rain_protocol_active ? 'text-blue-500' : 'text-zinc-500'}`} />
-                      <h4 className="font-bold text-white text-base">Rain Protocol Active</h4>
-                    </div>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
-                      Adapts menu items and packaging for heavy rain conditions. Automatically adjusts promised ETA buffers.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => updateSetting('rain_protocol_active', !settings.rain_protocol_active)}
-                    disabled={currentUser?.role !== 'admin'}
-                    className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors focus:outline-none ${
-                      settings.rain_protocol_active ? 'bg-blue-500' : 'bg-zinc-700'
-                    } ${currentUser?.role !== 'admin' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                  >
-                    <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                      settings.rain_protocol_active ? 'translate-x-9' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
-
-                {/* Rush Threshold */}
-                <div className="p-6 rounded-2xl bg-zinc-950/50 border border-zinc-800/80 space-y-4 hover:border-zinc-700 transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2.5">
-                        <Sliders className="h-5 w-5 text-amber-500" />
-                        <h4 className="font-bold text-white text-base">Kitchen Rush Threshold</h4>
-                      </div>
-                      <p className="text-xs text-zinc-400">Number of pending items before dynamic ETA inflation triggers automatically.</p>
-                    </div>
-                    <span className="font-mono text-2xl font-bold text-amber-400">{settings.rush_threshold} items</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="5"
-                    max="50"
-                    step="5"
-                    disabled={currentUser?.role !== 'admin'}
-                    value={settings.rush_threshold}
-                    onChange={(e) => updateSetting('rush_threshold', parseInt(e.target.value))}
-                    className="w-full accent-amber-500 bg-zinc-800 rounded-lg appearance-none h-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                  <div className="flex justify-between text-[10px] text-zinc-500 font-mono">
-                    <span>5 items (Low Buffer)</span>
-                    <span>25 items (Normal)</span>
-                    <span>50 items (High Capacity)</span>
-                  </div>
-                </div>
-
-                {/* ETA Inflation Factor */}
-                <div className="p-6 rounded-2xl bg-zinc-950/50 border border-zinc-800/80 space-y-4 hover:border-zinc-700 transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2.5">
-                        <Clock className="h-5 w-5 text-amber-500" />
-                        <h4 className="font-bold text-white text-base">ETA Inflation Multiplier</h4>
-                      </div>
-                      <p className="text-xs text-zinc-400">Multiplier applied to base prep time during rush hours.</p>
-                    </div>
-                    <span className="font-mono text-2xl font-bold text-amber-400">{settings.eta_inflation_factor}x</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1.0"
-                    max="3.0"
-                    step="0.1"
-                    disabled={currentUser?.role !== 'admin'}
-                    value={settings.eta_inflation_factor}
-                    onChange={(e) => updateSetting('eta_inflation_factor', parseFloat(e.target.value))}
-                    className="w-full accent-amber-500 bg-zinc-800 rounded-lg appearance-none h-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                  <div className="flex justify-between text-[10px] text-zinc-500 font-mono">
-                    <span>1.0x (No Inflation)</span>
-                    <span>2.0x (Double Time)</span>
-                    <span>3.0x (Maximum Buffer)</span>
-                  </div>
+                <div className="flex-1 overflow-y-auto p-2 md:p-3 space-y-2">
+                  {getKanbanOrders('preparing').map(order => (
+                    <OrderRow key={order.id} order={order} compact onAction={() => updateOrderStatus(order.id, 'ready')} actionLabel="Ready" actionColor="bg-purple-500 hover:bg-purple-400 text-white" onClick={() => setSelectedOrder(order)} />
+                  ))}
+                  {getKanbanOrders('preparing').length === 0 && (
+                    <p className="text-center text-xs text-zinc-600 py-6">Empty</p>
+                  )}
                 </div>
               </div>
-            </div>
+
+              {/* Ready */}
+              <div className="flex-1 flex flex-col bg-zinc-900/30 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-lg min-h-[250px]">
+                <div className="p-3 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-900/50">
+                  <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Ready
+                  </h3>
+                  <span className="text-xs text-zinc-400 font-mono bg-zinc-800 px-2 py-0.5 rounded-md">{getKanbanOrders('ready').length}</span>
+                </div>
+                <div className="flex-1 overflow-y-auto p-2 md:p-3 space-y-2">
+                  {getKanbanOrders('ready').map(order => (
+                    <OrderRow key={order.id} order={order} compact onAction={() => updateOrderStatus(order.id, 'completed')} actionLabel="Done" actionColor="bg-emerald-500 hover:bg-emerald-400 text-zinc-950" onClick={() => setSelectedOrder(order)} />
+                  ))}
+                  {getKanbanOrders('ready').length === 0 && (
+                    <p className="text-center text-xs text-zinc-600 py-6">Empty</p>
+                  )}
+                </div>
+              </div>
+            </section>
           </div>
         )}
       </main>
 
-      {/* ORDER DETAIL MODAL */}
+      {/* SLIDE-OVER DRAWER FOR ORDER DETAILS */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-lg w-full space-y-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-150">
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="absolute right-6 top-6 p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full transition-all"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="space-y-2 border-b border-zinc-800 pb-6">
-              <div className="flex items-center gap-3">
-                <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 font-mono font-bold text-sm px-3 py-1 rounded-xl">
-                  {selectedOrder.order_code}
-                </span>
-                <span className="text-xs text-zinc-400 font-mono">
-                  {new Date(selectedOrder.created_at).toLocaleString()}
-                </span>
-              </div>
-              <h3 className="text-xl font-bold text-white tracking-tight">
-                {selectedOrder.customers?.display_name || selectedOrder.customers?.phone_e164}
-              </h3>
-              <p className="text-sm text-zinc-400 font-mono flex items-center gap-1.5">
-                <Phone className="h-4 w-4 text-zinc-500" />
-                <span>{selectedOrder.customers?.phone_e164}</span>
-              </p>
-            </div>
-
-            {/* Items List */}
-            <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">Order Items</h4>
-              {selectedOrder.order_items?.map((item, idx) => (
-                <div key={item.id || idx} className="bg-zinc-950/50 border border-zinc-800/80 rounded-2xl p-4 space-y-2">
-                  <div className="flex items-center justify-between font-semibold text-white text-base">
-                    <span>{item.qty}x {item.menu_items?.name}</span>
-                    <span className="font-mono text-amber-400">₹{item.line_total_inr}</span>
-                  </div>
-
-                  {item.order_item_modifiers && item.order_item_modifiers.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-zinc-800/60">
-                      {item.order_item_modifiers.map((mod, midx) => (
-                        <span key={midx} className="bg-zinc-800 text-zinc-300 text-xs px-2.5 py-1 rounded-lg border border-zinc-700 flex items-center gap-1.5 font-medium">
-                          <span>{mod.modifier_name}</span>
-                          {mod.price_delta_inr > 0 && (
-                            <span className="text-amber-400 font-mono">+₹{mod.price_delta_inr}</span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {item.customer_note && (
-                    <p className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl italic mt-2">
-                      &quot;{item.customer_note}&quot;
-                    </p>
+        <div className="fixed inset-0 z-50 flex justify-end md:justify-end justify-center items-end md:items-stretch">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" 
+            onClick={() => setSelectedOrder(null)} 
+          />
+          
+          {/* Drawer Panel */}
+          <div className="relative w-full md:w-[450px] h-[90vh] md:h-full bg-zinc-950 border-t md:border-t-0 md:border-l border-zinc-800 shadow-2xl flex flex-col animate-in slide-in-from-bottom md:slide-in-from-right duration-300 rounded-t-3xl md:rounded-none">
+            
+            {/* Drawer Header */}
+            <div className="p-5 md:p-6 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/30 flex-shrink-0">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-xl font-bold text-white tracking-tight">Order {selectedOrder.order_code}</h3>
+                  {selectedOrder.payment_status !== 'paid' && (
+                    <span className="bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-[10px] px-2 py-0.5 rounded-md uppercase">Unpaid</span>
                   )}
                 </div>
-              ))}
+                <p className="text-sm text-zinc-400 flex items-center gap-2">
+                  <User className="h-3.5 w-3.5" />
+                  {selectedOrder.customers?.display_name || selectedOrder.customers?.phone_e164}
+                </p>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} className="p-2 text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 rounded-full transition-colors">
+                <X className="h-5 w-5" />
+              </button>
             </div>
 
-            {/* Summary / Total */}
-            <div className="bg-zinc-950 rounded-2xl p-6 border border-zinc-800 space-y-3">
-              <div className="flex justify-between text-sm text-zinc-400 font-medium">
-                <span>Subtotal</span>
-                <span className="font-mono text-white">₹{selectedOrder.subtotal_inr}</span>
+            {/* Drawer Body (Scrollable) */}
+            <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-6">
+              {/* Order Items */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Items</h4>
+                {selectedOrder.order_items?.map((item, idx) => (
+                  <div key={item.id || idx} className="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-3.5 space-y-2">
+                    <div className="flex items-start justify-between font-medium text-white text-sm">
+                      <div className="flex gap-2">
+                        <span className="font-bold text-amber-500">{item.qty}x</span>
+                        <span>{item.menu_items?.name}</span>
+                      </div>
+                      <span className="font-mono text-zinc-400">₹{item.line_total_inr}</span>
+                    </div>
+
+                    {item.order_item_modifiers && item.order_item_modifiers.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pl-6">
+                        {item.order_item_modifiers.map((mod, midx) => (
+                          <span key={midx} className="bg-zinc-800 text-zinc-300 text-[10px] px-2 py-0.5 rounded border border-zinc-700">
+                            {mod.modifier_name} {mod.price_delta_inr > 0 ? `(+₹${mod.price_delta_inr})` : ''}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {item.customer_note && (
+                      <div className="ml-6 bg-amber-500/10 border border-amber-500/20 p-2 rounded-lg text-[11px] text-amber-300 italic">
+                        "{item.customer_note}"
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between text-sm text-zinc-400 font-medium">
-                <span>Payment Status ({selectedOrder.payment_mode})</span>
-                <span className={`font-semibold uppercase tracking-wider text-xs px-2.5 py-1 rounded-full border ${
-                  selectedOrder.payment_status === 'paid' 
-                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                }`}>
-                  {selectedOrder.payment_status}
-                </span>
+              
+              {/* Receipt Summary */}
+              <div className="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800 space-y-2">
+                <div className="flex justify-between text-xs text-zinc-400">
+                  <span>Subtotal</span>
+                  <span className="font-mono">₹{selectedOrder.subtotal_inr}</span>
+                </div>
+                <div className="flex justify-between text-xs text-zinc-400 items-center">
+                  <span>Payment ({selectedOrder.payment_mode})</span>
+                  <div className="flex items-center gap-2">
+                    <span className={selectedOrder.payment_status === 'paid' ? 'text-emerald-400' : 'text-red-400'}>
+                      {selectedOrder.payment_status.toUpperCase()}
+                    </span>
+                    {selectedOrder.payment_status !== 'paid' && (
+                      <button onClick={() => markOrderPaid(selectedOrder.id)} className="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-white px-2 py-1 rounded border border-zinc-700">
+                        Mark Paid
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-zinc-800/80">
+                  <span>Total</span>
+                  <span className="font-mono text-amber-400">₹{selectedOrder.total_inr}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-base font-bold text-white pt-3 border-t border-zinc-800">
-                <span>Grand Total</span>
-                <span className="font-mono text-xl text-amber-400">₹{selectedOrder.total_inr}</span>
-              </div>
+            </div>
+
+            {/* Drawer Footer (Fixed Primary Action) */}
+            <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex-shrink-0">
+               {selectedOrder.state === 'new' && (
+                 <DrawerActionButton label="Accept Order" color="bg-amber-500 hover:bg-amber-400 text-zinc-950" onClick={() => updateOrderStatus(selectedOrder.id, 'accepted')} />
+               )}
+               {selectedOrder.state === 'accepted' && (
+                 <DrawerActionButton label="Start Preparing" color="bg-blue-500 hover:bg-blue-400 text-white" onClick={() => updateOrderStatus(selectedOrder.id, 'preparing')} />
+               )}
+               {selectedOrder.state === 'preparing' && (
+                 <DrawerActionButton label="Mark Ready for Pickup" color="bg-purple-500 hover:bg-purple-400 text-white" onClick={() => updateOrderStatus(selectedOrder.id, 'ready')} />
+               )}
+               {selectedOrder.state === 'ready' && (
+                 <DrawerActionButton label="Complete Order" color="bg-emerald-500 hover:bg-emerald-400 text-zinc-950" onClick={() => updateOrderStatus(selectedOrder.id, 'completed')} />
+               )}
             </div>
           </div>
         </div>
@@ -1067,78 +738,131 @@ export default function Dashboard() {
 }
 
 // ---------------------------------------------------------------------------
-// KANBAN ORDER CARD COMPONENT
+// COMPONENTS
 // ---------------------------------------------------------------------------
-function OrderCard({ 
-  order, 
-  onAction, 
-  actionLabel, 
-  actionColor,
-  onClick
-}: { 
-  order: Order; 
-  onAction: () => void; 
-  actionLabel: string; 
-  actionColor: string;
-  onClick: () => void;
-}) {
+
+function DrawerActionButton({ label, color, onClick }: { label: string, color: string, onClick: () => void }) {
   return (
-    <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-2xl p-5 space-y-4 shadow-md hover:border-amber-500/50 hover:shadow-amber-500/5 transition-all group relative flex flex-col justify-between">
-      <div className="space-y-3 cursor-pointer" onClick={onClick}>
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <span className="bg-zinc-800 group-hover:bg-amber-500/10 group-hover:text-amber-400 group-hover:border-amber-500/20 border border-zinc-700 text-zinc-200 font-mono font-bold text-xs px-2.5 py-1 rounded-xl transition-all">
-            {order.order_code}
-          </span>
-          <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg">
-            <Clock className="h-3 w-3 text-amber-500" />
-            <span>{order.promised_eta_min}m ETA</span>
-          </div>
-        </div>
+    <button 
+      onClick={onClick}
+      className={`w-full py-4 rounded-xl font-bold text-sm md:text-base shadow-lg transition-transform active:scale-[0.98] ${color}`}
+    >
+      {label}
+    </button>
+  );
+}
 
-        {/* Customer */}
-        <div>
-          <h4 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors truncate">
-            {order.customers?.display_name || order.customers?.phone_e164}
-          </h4>
-          <p className="text-[11px] text-zinc-500 font-mono truncate">{order.customers?.phone_e164}</p>
+function OrderRow({ order, compact = false, onAction, actionLabel, actionColor, onClick }: any) {
+  return (
+    <div 
+      onClick={onClick}
+      className="group bg-zinc-950/50 border border-zinc-800/60 hover:border-amber-500/50 rounded-xl p-3 md:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 cursor-pointer transition-all hover:bg-zinc-900/50"
+    >
+      <div className="flex-1 min-w-0 flex flex-col md:flex-row gap-2 md:gap-4 md:items-center">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="font-mono font-bold text-zinc-200 text-xs md:text-sm">{order.order_code}</span>
+          {order.payment_status !== 'paid' && (
+            <span className="bg-red-500/10 border border-red-500/20 text-red-400 text-[9px] px-1.5 py-0.5 rounded uppercase font-bold">Unpaid</span>
+          )}
         </div>
-
-        {/* Items Summary */}
-        <div className="space-y-1.5 pt-2 border-t border-zinc-800/60">
-          {order.order_items?.map((item, idx) => (
-            <div key={item.id || idx} className="text-xs text-zinc-300 font-medium flex items-center justify-between">
-              <span className="truncate pr-2">
-                <span className="font-bold text-amber-400">{item.qty}x</span> {item.menu_items?.name}
-              </span>
-              <span className="font-mono text-zinc-500 text-[11px]">₹{item.line_total_inr}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Customer Note Badge */}
-        {order.customer_note && (
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 text-[11px] text-amber-300 italic line-clamp-2">
-            &quot;{order.customer_note}&quot;
+        
+        {!compact && (
+          <div className="flex-1 min-w-0">
+            <p className="text-xs md:text-sm font-medium text-white truncate">{order.customers?.display_name || order.customers?.phone_e164}</p>
+            <p className="text-[10px] md:text-xs text-zinc-400 truncate">
+              {order.order_items?.map((i:any) => `${i.qty}x ${i.menu_items?.name}`).join(', ')}
+            </p>
           </div>
         )}
       </div>
 
-      {/* Footer / Action */}
-      <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Total</span>
-          <span className="font-mono font-bold text-white text-sm">₹{order.total_inr}</span>
+      <div className="flex items-center justify-between md:justify-end gap-3 flex-shrink-0">
+        <div className="text-right hidden md:block">
+           <p className="text-xs font-mono text-zinc-400">{order.promised_eta_min}m ETA</p>
         </div>
-
         <button
           onClick={(e) => { e.stopPropagation(); onAction(); }}
-          className={`rounded-xl bg-gradient-to-r ${actionColor} py-2 px-3 text-center font-semibold text-white text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5 ml-auto`}
+          className={`px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-bold text-xs shadow-md transition-transform active:scale-95 ${actionColor}`}
         >
-          <span>{actionLabel}</span>
-          <ArrowRight className="h-3.5 w-3.5" />
+          {actionLabel}
         </button>
       </div>
+    </div>
+  );
+}
+
+function HandoffRow({ session, onResolve }: any) {
+  return (
+    <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-3 md:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 flex-shrink-0">
+          <User className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-red-100 truncate">{session.customers?.display_name || session.customers?.phone_e164}</p>
+          <p className="text-xs text-red-400/80">Needs Staff Assistance</p>
+        </div>
+      </div>
+      <button
+        onClick={onResolve}
+        className="px-4 py-2 rounded-lg font-bold text-xs bg-red-500 hover:bg-red-400 text-white transition-all flex items-center justify-center gap-1.5"
+      >
+        <CheckCircle2 className="h-3.5 w-3.5" />
+        Resolve
+      </button>
+    </div>
+  );
+}
+
+function SettingsPanel({ settings, updateSetting, currentUser }: any) {
+  return (
+    <div className="w-full max-w-3xl mx-auto p-4 md:p-8 overflow-y-auto">
+      <div className="bg-zinc-900/60 border border-zinc-800 rounded-3xl p-6 md:p-8 space-y-8 backdrop-blur-sm shadow-xl">
+        <div className="border-b border-zinc-800 pb-4">
+          <h2 className="text-xl font-bold text-white">System Settings</h2>
+          <p className="text-sm text-zinc-400">Configure parameters and overrides.</p>
+        </div>
+        
+        <div className="space-y-6">
+          <SettingToggle 
+            icon={<Power className="h-5 w-5" />} title="Kill Switch (Pause Orders)" 
+            desc="Stops accepting new digital orders."
+            active={settings.digital_lane_paused} color="bg-red-500" 
+            onToggle={() => updateSetting('digital_lane_paused', !settings.digital_lane_paused)} 
+            disabled={currentUser?.role !== 'admin'} 
+          />
+          <SettingToggle 
+            icon={<CloudRain className="h-5 w-5" />} title="Rain Protocol" 
+            desc="Adapts menu and increases buffers automatically."
+            active={settings.rain_protocol_active} color="bg-blue-500" 
+            onToggle={() => updateSetting('rain_protocol_active', !settings.rain_protocol_active)} 
+            disabled={currentUser?.role !== 'admin'} 
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingToggle({ icon, title, desc, active, color, onToggle, disabled }: any) {
+  return (
+    <div className="flex items-center justify-between p-4 md:p-5 rounded-2xl bg-zinc-950/50 border border-zinc-800/80">
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${active ? color+'/20 text-'+color.split('-')[1]+'-400' : 'bg-zinc-800 text-zinc-400'}`}>
+           {icon}
+        </div>
+        <div>
+          <h4 className="font-bold text-white text-sm md:text-base">{title}</h4>
+          <p className="text-[10px] md:text-xs text-zinc-400">{desc}</p>
+        </div>
+      </div>
+      <button
+        onClick={onToggle}
+        disabled={disabled}
+        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${active ? color : 'bg-zinc-700'} ${disabled ? 'opacity-50' : ''}`}
+      >
+        <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${active ? 'translate-x-6' : 'translate-x-1'}`} />
+      </button>
     </div>
   );
 }

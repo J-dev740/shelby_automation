@@ -13,6 +13,10 @@ export const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
+pool.on('error', (err) => {
+  console.error('Unexpected database pool error:', err);
+});
+
 export const db = {
   async query(text: string, params?: any[]) {
     const start = Date.now();

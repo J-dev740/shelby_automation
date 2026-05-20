@@ -1,5 +1,5 @@
 import { Queue, Worker } from 'bullmq';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { env } from '../config/env.js';
 import { MetaCloudProvider } from '../adapters/messaging/meta-cloud.provider.js';
 import { MockMessagingProvider } from '../adapters/messaging/mock.provider.js';
@@ -9,8 +9,8 @@ import { handleIncomingMessage } from '../orchestrator/fsm.js';
 let inboundQueue: Queue | null = null;
 let inboundWorker: Worker | null = null;
 
-const provider: MessagingProvider = env.NODE_ENV === 'production'
-  ? new MetaCloudProvider(env.META_API_TOKEN || '', env.META_PHONE_ID || '')
+const provider: MessagingProvider = env.MESSAGING_PROVIDER === 'meta'
+  ? new MetaCloudProvider(env.META_API_TOKEN || '', env.META_PHONE_ID || '', env.META_API_VERSION)
   : new MockMessagingProvider();
 
 

@@ -1,17 +1,31 @@
 import { env } from './config/env.js';
 import { buildApp } from './app.js';
 
+import { pool } from './lib/db.js';
+
 const start = async () => {
   const app = await buildApp();
   try {
     await app.listen({ port: parseInt(env.PORT), host: '0.0.0.0' });
-    console.log(`\n==============================================`);
-    console.log(`🚀 DEMO SERVER LISTENING ON PORT ${env.PORT}`);
-    console.log(`==============================================`);
-    console.log(`1. Run 'ngrok http ${env.PORT}' in a new terminal`);
-    console.log(`2. Paste 'https://<your-ngrok-url>/webhook/meta' into Meta Dashboard`);
-    console.log(`3. Use Verify Token: '${env.META_VERIFY_TOKEN}'`);
-    console.log(`==============================================\n`);
+    app.log.info(`🚀 Shelby API listening on port ${env.PORT} [${env.NODE_ENV}]`);
+    app.log.info(`Provider: ${env.MESSAGING_PROVIDER} | API Version: ${env.META_API_VERSION}`);
+    if (env.NODE_ENV !== 'production') {
+      app.log.info(`Verify Token: ${env.META_VERIFY_TOKEN}`);
+      app.log.info(`Run: ngrok http ${env.PORT}`);
+    }
+
+    // Graceful shutdown
+    const shutdown = async (signal: string) => {
+      app.log.info(`Received ${signal}. Shutting down gracefully...`);
+      await app.close();
+      await pool.end();
+      process.exit(0);
+    };
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('unhandledRejection', (reason) => {
+      app.log.error({ reason }, 'Unhandled rejection');
+    });
   } catch (err) {
     console.error(err);
     process.exit(1);

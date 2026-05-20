@@ -4,6 +4,7 @@ import { orderService } from '../services/order.service.js';
 import { settingsService } from '../services/settings.service.js';
 import { db } from '../lib/db.js';
 import { MESSAGES } from './messages.js';
+import { razorpayService } from '../services/razorpay.service.js';
 
 export async function handleIncomingMessage(
   from: string, 
@@ -88,12 +89,28 @@ export async function handleIncomingMessage(
         const orderRes = await orderService.createOrder({
           customerId: session.customer_id,
           lines: session.cart_json,
-          idempotencyKey: `order:${session.id}:${JSON.stringify(session.cart_json)}`
+          idempotencyKey: `order:${message.id}`
         });
 
         await sessionService.updateSession(session.id, { state: 'idle', cart_json: [] });
         const itemNames = orderRes.pricedCart.lines.map(l => `${l.qty}x ${l.itemName}`).join(', ');
-        await provider.sendText(from, MESSAGES.ORDER_CONFIRMED(orderRes.orderCode, itemNames, orderRes.pricedCart.maxPrepTimeMin));
+        
+        let paymentLinkUrl: string | undefined;
+        if (razorpayService.isConfigured()) {
+          const plink = await razorpayService.createPaymentLink(
+            orderRes.orderId,
+            orderRes.orderCode,
+            orderRes.pricedCart.total,
+            from
+          );
+          await orderService.updatePaymentIntent(orderRes.orderId, plink.id, 'razorpay');
+          paymentLinkUrl = plink.short_url;
+        }
+
+        await provider.sendText(
+          from, 
+          MESSAGES.ORDER_CONFIRMED(orderRes.orderCode, itemNames, orderRes.pricedCart.maxPrepTimeMin, paymentLinkUrl)
+        );
       } catch (err: any) {
         if (err.message === 'Digital ordering lane is currently paused.') {
           await provider.sendText(from, MESSAGES.DIGITAL_LANE_PAUSED);

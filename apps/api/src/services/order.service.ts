@@ -116,5 +116,12 @@ export const orderService = {
     } finally {
       client.release();
     }
+  },
+
+  async updatePaymentIntent(orderId: string, intentId: string, mode: string) {
+    await db.query(
+      `UPDATE orders SET payment_intent_id = $1, payment_mode = $2 WHERE id = $3`,
+      [intentId, mode, orderId]
+    );
   }
 };

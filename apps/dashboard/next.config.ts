@@ -9,9 +9,9 @@ const nextConfig: NextConfig = {
   // the project directory (into ~/.shelby_node_modules) to avoid iCloud
   // Desktop sync interference. Without this, Turbopack's security sandbox
   // blocks resolution of any file whose real path is outside this folder.
-  outputFileTracingRoot: monorepoRoot,
+  outputFileTracingRoot: "/Users/rindrajith",
   turbopack: {
-    root: monorepoRoot,
+    root: "/Users/rindrajith",
   },
 };
 

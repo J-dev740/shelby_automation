@@ -1,0 +1,11 @@
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.0.17:3001
+- Environments: .env.local
+✓ Ready in 47.9min
+Error: ETIMEDOUT: connection timed out, read
+    at ignore-listed frames {
+  errno: -60,
+  code: 'ETIMEDOUT',
+  syscall: 'read'
+}

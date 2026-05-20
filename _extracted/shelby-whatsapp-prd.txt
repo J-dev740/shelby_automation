@@ -1,0 +1,374 @@
+Shelby the Barista WhatsApp Ordering System PRD
+Overview
+This document defines a low-cost but production-minded MVP for a WhatsApp-based ordering, FAQ, and order-status system for Shelby the Barista in HSR Layout, Bengaluru. The goal is to reduce peak-hour counter friction, answer repetitive customer questions quickly, and create a clean path from pilot to scalable production without rebuilding the core architecture. WhatsApp Cloud API uses webhooks for inbound and status events, making it suitable for an event-driven backend.[cite:184][cite:185] Razorpay Payment Links can be created and managed via API/webhooks, which makes them a low-friction payment option for a pilot.[cite:189][cite:192] Supabase Realtime can stream Postgres changes to the staff dashboard for live order updates.[cite:190][cite:193]
+Product goals
+Reduce counter order-taking load during weekend rush hours.
+Reduce average time from customer intent to order confirmation.
+Provide deterministic order capture over WhatsApp.
+Give staff a simple dashboard to manage incoming orders.
+Preserve a modular architecture so any provider can be replaced later.
+Success metrics
+25% reduction in average order-taking time during pilot peak hours.
+20% of peak-hour orders initiated through WhatsApp within 4 weeks.
+Less than 3% order error rate on WhatsApp-originated orders.
+Median time to first response under 10 seconds for automated replies.
+At least 70% of FAQ chats resolved without staff intervention.
+Scope
+In scope for MVP
+WhatsApp entry point via QR code and direct link.
+Menu browse by category.
+Guided order creation for pickup and dine-in.
+FAQ answering from a controlled knowledge base.
+Order confirmation with estimated prep time.
+Staff dashboard with order list and status controls.
+Outbound customer notifications for confirmation and ready status.
+Manual takeover / fallback path.
+Optional Razorpay payment link support.
+Out of scope for MVP
+Delivery logistics.
+Loyalty programs.
+CRM segmentation and marketing campaigns.
+Complex personalized recommendations.
+Full POS integration.
+Voice ordering.
+Multilingual AI beyond a small curated FAQ set.
+User stories
+Customer
+As a customer, I want to view the menu on WhatsApp without downloading an app.
+As a customer, I want to place an order quickly in a structured flow.
+As a customer, I want to know how long my order will take.
+As a customer, I want to check if my order is ready.
+As a customer, I want answers to common café questions.
+Staff
+As staff, I want incoming WhatsApp orders to appear in one queue.
+As staff, I want to mark orders as accepted, preparing, ready, or cancelled.
+As staff, I want to pause unavailable items quickly.
+As staff, I want to take over a conversation if the bot is confused.
+Owner
+As the owner, I want to see whether WhatsApp reduces rush-hour congestion.
+As the owner, I want low operating cost during pilot and clear upgrade paths later.
+Core flows
+Flow 1: FAQ
+Customer opens WhatsApp chat.
+Bot presents quick actions: View menu, Order pickup, Check order status, Ask a question.
+If FAQ intent is detected, the system retrieves answers from the café knowledge base.
+If confidence is low, the system offers staff handoff.
+Flow 2: Pickup order
+Customer selects Order pickup.
+Bot shows categories.
+Customer selects item(s), quantity, and allowed modifiers.
+Bot shows cart summary and total.
+Customer confirms name and phone number.
+System creates order and returns order ID, ETA, and optional payment link.
+Staff dashboard receives the order in real time.
+Staff updates status to Accepted, Preparing, Ready.
+Customer receives status updates.
+Flow 3: Dine-in assist
+Customer scans table QR or starts chat.
+Bot asks for table number.
+The rest of the flow mirrors pickup ordering.
+Order ticket includes dine-in marker and table number.
+Flow 4: Order status
+Customer selects Check order status.
+Bot asks for order ID or fetches recent active order from the phone number.
+Bot returns current status and ETA.
+Functional requirements
+Messaging & conversation
+Receive inbound WhatsApp messages via webhook.[cite:184]
+Verify webhook and normalize provider payloads.[cite:184][cite:185]
+Store raw inbound and outbound message events.
+Support session state per phone number.
+Support quick replies/buttons/list menus where possible.
+Provide manual takeover flag.
+FAQ engine
+Retrieve answers only from approved Shelby knowledge base.
+Return concise answers with fallback to staff when confidence is low.
+Maintain answer source version for auditability.
+Menu & catalog
+Category list.
+Menu items with name, description, base price, image optional, tags, prep time.
+Modifier groups and modifier options.
+Availability flag at item and modifier level.
+Ordering
+Build cart deterministically.
+Compute totals deterministically.
+Enforce valid modifier combinations.
+Generate order ID/token.
+Store order source = WhatsApp.
+Support cash at counter and optional payment link.
+Staff dashboard
+Login for authorized staff.
+New / Accepted / Preparing / Ready / Cancelled columns or tabs.
+Live updates using realtime subscriptions.[cite:190][cite:193]
+Order detail drawer.
+Availability toggle per item.
+Manual resend of customer update.
+Notifications
+Order confirmation.
+Payment link sent if enabled.[cite:189][cite:192]
+Order ready notification.
+Error/fallback notification when staff handoff occurs.
+Non-functional requirements
+Idempotent webhook processing.
+P95 webhook handling under 2 seconds for non-AI flows.
+Audit trail for every order and status change.
+Graceful degradation if AI is unavailable.
+No dependence on LLM for critical pricing or order logic.
+All secrets managed via environment variables.
+Basic RBAC for staff/admin dashboard.
+System architecture
+Logical components
+WhatsApp Provider LayerMeta Cloud API directly or a BSP such as Interakt/WATI/Twilio for pilot.[cite:159][cite:167][cite:169]
+Webhook GatewayPublic endpoint that validates events and writes raw payloads.
+Orchestrator / State MachineDetermines next state based on session context and message intent.
+Business ServicesMenu service, cart service, order service, payment service, notification service.
+FAQ Retrieval ServiceRetrieval over approved café docs, with optional LLM answer formatting.
+Data LayerPostgres (Supabase) for transactional entities and logs.
+Realtime Staff UIReact dashboard listening to order/status changes via Supabase Realtime.[cite:190]
+Architecture principles
+Channel-agnostic internal schema.
+Event log first, side effects second.
+Deterministic business rules for order creation.
+Replaceable providers behind adapter interfaces.
+Suggested technical stack
+Pilot stack
+Backend: Node.js + Fastify.
+DB: Supabase Postgres.
+Realtime: Supabase Realtime.[cite:190]
+Queue/jobs: BullMQ + Redis or Upstash QStash.
+Admin UI: Next.js / React.
+AI layer: Retrieval + hosted LLM.
+Payments: Razorpay Payment Links.[cite:189]
+Hosting: Render/Railway/Fly.io/Vercel.
+Production evolution
+Direct Meta Cloud API if BSP abstraction becomes limiting.[cite:185][cite:191]
+Managed Redis and autoscaled workers.
+Dedicated observability stack.
+POS/KDS integration.
+Warehouse/BI for analytics.
+API boundary design
+Create provider adapters so the rest of the app never depends directly on one vendor.
+Interfaces
+MessagingProvider.sendMessage(payload)
+MessagingProvider.parseWebhook(rawPayload)
+PaymentProvider.createPaymentLink(order)
+PaymentProvider.parseWebhook(rawPayload)
+LLMProvider.generateFaqAnswer(context)
+Data model
+Tables
+customers
+id (uuid)
+phone_e164 (unique)
+name
+created_at
+updated_at
+sessions
+id (uuid)
+customer_id
+channel
+state
+context_json
+active_order_id nullable
+last_message_at
+created_at
+updated_at
+menu_categories
+id
+name
+sort_order
+active
+menu_items
+id
+category_id
+name
+description
+base_price_paise
+prep_time_min
+active
+image_url nullable
+modifier_groups
+id
+menu_item_id
+name
+min_select
+max_select
+required
+modifiers
+id
+modifier_group_id
+name
+price_delta_paise
+active
+orders
+id (uuid)
+order_code
+customer_id
+order_type (pickup|dine_in)
+table_number nullable
+source
+status (new|accepted|preparing|ready|cancelled|completed)
+subtotal_paise
+tax_paise
+total_paise
+payment_status (pending|paid|failed|na)
+eta_minutes
+notes nullable
+created_at
+updated_at
+order_items
+id
+order_id
+menu_item_id
+item_name_snapshot
+base_price_snapshot_paise
+quantity
+line_total_paise
+order_item_modifiers
+id
+order_item_id
+modifier_name_snapshot
+price_delta_snapshot_paise
+order_status_events
+id
+order_id
+from_status
+to_status
+actor_type (system|staff)
+actor_id nullable
+occurred_at
+messages
+id
+provider_message_id
+session_id
+direction (inbound|outbound)
+type
+normalized_payload_json
+raw_payload_json
+status
+created_at
+faq_documents
+id
+title
+content
+version
+active
+staff_users
+id
+email
+role
+active
+Webhook design
+WhatsApp inbound webhook
+GET /webhooks/whatsapp for verification token challenge.[cite:184][cite:185]
+POST /webhooks/whatsapp for inbound messages and status events.[cite:184]
+Processing rules:
+Verify signature/token.
+Write raw payload to messages_raw or log store.
+Normalize into internal event model.
+Deduplicate by provider event/message ID.
+Push async processing job.
+Razorpay webhook
+POST /webhooks/razorpay
+Verify signature.
+Match payment link/payment entity to order.
+Update payment_status.
+Emit internal event and optionally send customer confirmation.[cite:189][cite:192]
+State machine
+Recommended states for sessions.state:
+idle
+faq
+ordering_select_type
+ordering_select_category
+ordering_select_item
+ordering_select_modifiers
+ordering_review_cart
+ordering_collect_identity
+ordering_payment_pending
+ordering_confirmed
+handoff_requested
+Recommended order states:
+new
+accepted
+preparing
+ready
+cancelled
+completed
+Example internal event schema
+{  "event_id": "uuid",  "event_type": "customer.message.received",  "channel": "whatsapp",  "provider": "meta",  "customer_phone": "+9198xxxxxx",  "session_id": "uuid",  "occurred_at": "2026-04-27T03:00:00Z",  "payload": {}}
+Screen requirements
+Staff dashboard screens
+Login
+Orders board
+Order detail drawer/modal
+Menu availability management
+Conversation view with handoff controls
+Basic analytics view
+Customer experience surfaces
+WhatsApp conversation only for MVP.
+Printed QR codes at counter, tables, and takeaway pickup point.
+Analytics events
+Track:
+chat_started
+faq_answered
+faq_handoff_requested
+order_started
+item_added
+cart_abandoned
+order_confirmed
+payment_link_sent
+payment_completed
+status_changed
+order_ready_notified
+manual_intervention
+4-week build roadmap
+Week 1: foundation
+Finalize menu schema and FAQ set.
+Create Supabase schema.
+Build webhook endpoints.
+Implement normalized event logging.
+Build basic staff auth and dashboard shell.
+Week 2: order engine
+Implement menu browse flow.
+Implement cart and pricing logic.
+Implement order creation.
+Add staff order board and status updates.
+Add realtime sync to dashboard.[cite:190]
+Week 3: AI + payments + hardening
+Add FAQ retrieval and narrow AI layer.
+Add fallback/handoff logic.
+Integrate Razorpay payment links if desired.[cite:189]
+Add message templates and notifications.
+Add idempotency and retry logic.
+Week 4: pilot
+Internal testing with staff.
+Shadow mode during off-peak hours.
+Weekend peak-hour pilot.
+Instrument metrics and bug triage.
+Add operational SOPs.
+Risks and mitigations
+Risk: kitchen is the real bottleneck
+Mitigation: measure counter delay separately from kitchen prep delay before claiming success.
+Risk: AI gives wrong answers
+Mitigation: retrieval-only answers, low-confidence fallback to staff, no AI control over price/order state.
+Risk: menu drift
+Mitigation: one source of truth for active items; staff toggle availability in dashboard.
+Risk: WhatsApp provider lock-in
+Mitigation: internal adapter layer and normalized event schema.
+Risk: payment confusion
+Mitigation: launch with pay-at-counter first if staff prefers operational simplicity.
+SOPs for pilot
+Staff checks dashboard continuously during pilot windows.
+One person owns manual handoff chats.
+Availability updated before every rush window.
+Every cancelled order gets a reason code.
+End-of-day review of failed chats and wrong orders.
+Production-readiness checklist
+Provider abstraction complete.
+Webhook signatures verified.
+Idempotency keys in place.
+Order event audit log complete.
+Dashboard role separation in place.
+Monitoring for webhook failures, queue lag, and message send errors.
+Incident runbook documented.
+Go-live recommendation
+Launch with pickup ordering and FAQ first. Dine-in table ordering should follow only after staff consistently handles pickup flow. This keeps operational change small and makes pilot learning clearer.

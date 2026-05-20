@@ -1,0 +1,14 @@
+file:///Users/rindrajith/Desktop/shelby_whatsapp_automation/node_modules/.pnpm/vitest@4.1.6_@types+node@20.19.40_vite@8.0.13_@types+node@20.19.40_esbuild@0.27.7_jiti@2.7.0_tsx@4.21.0_/node_modules/vitest/dist/chunks/cac.CVxlyDFd.js:406
+          throw new CACError(`Unknown option \`${name.length > 1 ? `--${name}` : `-${name}`}\``);
+                ^
+
+CACError: Unknown option `--threads`
+    at Command.checkUnknownOptions (file:///Users/rindrajith/Desktop/shelby_whatsapp_automation/node_modules/.pnpm/vitest@4.1.6_@types+node@20.19.40_vite@8.0.13_@types+node@20.19.40_esbuild@0.27.7_jiti@2.7.0_tsx@4.21.0_/node_modules/vitest/dist/chunks/cac.CVxlyDFd.js:406:17)
+    at CAC.runMatchedCommand (file:///Users/rindrajith/Desktop/shelby_whatsapp_automation/node_modules/.pnpm/vitest@4.1.6_@types+node@20.19.40_vite@8.0.13_@types+node@20.19.40_esbuild@0.27.7_jiti@2.7.0_tsx@4.21.0_/node_modules/vitest/dist/chunks/cac.CVxlyDFd.js:606:13)
+    at CAC.parse (file:///Users/rindrajith/Desktop/shelby_whatsapp_automation/node_modules/.pnpm/vitest@4.1.6_@types+node@20.19.40_vite@8.0.13_@types+node@20.19.40_esbuild@0.27.7_jiti@2.7.0_tsx@4.21.0_/node_modules/vitest/dist/chunks/cac.CVxlyDFd.js:547:12)
+    at file:///Users/rindrajith/Desktop/shelby_whatsapp_automation/node_modules/.pnpm/vitest@4.1.6_@types+node@20.19.40_vite@8.0.13_@types+node@20.19.40_esbuild@0.27.7_jiti@2.7.0_tsx@4.21.0_/node_modules/vitest/dist/cli.js:11:13
+    at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:98:5)
+
+Node.js v23.10.0

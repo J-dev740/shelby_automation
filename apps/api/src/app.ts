@@ -4,6 +4,7 @@ import { env } from './config/env.js';
 import metaWebhookRoutes from './routes/webhook.meta.js';
 import razorpayWebhookRoutes from './routes/webhook.razorpay.js';
 import supabaseWebhookRoutes from './routes/webhook.supabase.js';
+import rateLimitPlugin from './plugins/rate-limit.plugin.js';
 
 export async function buildApp() {
   const app = fastify({
@@ -25,10 +26,18 @@ export async function buildApp() {
 
   await app.register(cors, {
     origin: env.NODE_ENV === 'production'
-      ? [/\.vercel\.app$/]      // production: Vercel domains only
+      ? [
+          // Allow any *.vercel.app subdomain (preview deploys) + explicit production domain
+          /\.vercel\.app$/,
+          // TODO: Replace with your custom domain once you have one, e.g.:
+          // 'https://dashboard.shelby.cafe'
+        ]
       : [/^http:\/\/localhost:\d+$/],  // dev: any localhost port
     credentials: true,
   });
+
+  // Rate limiting (60 req/min per IP on webhook routes)
+  await app.register(rateLimitPlugin);
 
   await app.register(metaWebhookRoutes);
   await app.register(razorpayWebhookRoutes);

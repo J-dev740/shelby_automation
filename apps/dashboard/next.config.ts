@@ -1,18 +1,18 @@
 import type { NextConfig } from "next";
-import path from "path";
 
-// The monorepo root — two levels up from apps/dashboard
-const monorepoRoot = path.resolve(__dirname, "../..");
+// On Vercel, VERCEL=1 is set automatically — skip local path overrides.
+// Locally these are needed to work around iCloud Desktop's symlink sandbox.
+const isVercel = Boolean(process.env.VERCEL);
 
 const nextConfig: NextConfig = {
-  // Allow Turbopack to resolve node_modules that are symlinked outside
-  // the project directory (into ~/.shelby_node_modules) to avoid iCloud
-  // Desktop sync interference. Without this, Turbopack's security sandbox
-  // blocks resolution of any file whose real path is outside this folder.
-  outputFileTracingRoot: "/Users/rindrajith",
-  turbopack: {
-    root: "/Users/rindrajith",
-  },
+  ...(isVercel
+    ? {}
+    : {
+        // Allows Turbopack to resolve symlinked node_modules outside the project
+        // directory when running on a macOS desktop with iCloud Drive sync.
+        outputFileTracingRoot: "/Users/rindrajith",
+        turbopack: { root: "/Users/rindrajith" },
+      }),
 };
 
 export default nextConfig;

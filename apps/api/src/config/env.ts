@@ -18,6 +18,9 @@ const envSchema = z.object({
   // Infrastructure
   DATABASE_URL: z.string().default('postgresql://postgres:postgres@127.0.0.1:54322/postgres'),
   REDIS_URL: z.string().optional(),
+  // Upstash Redis (HTTP REST — for rate limiting & serverless-safe usage)
+  UPSTASH_REDIS_REST_URL: z.string().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
   // Payments
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
@@ -33,6 +36,8 @@ const envSchema = z.object({
     if (!data.META_API_TOKEN) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'META_API_TOKEN required in production' });
     if (!data.META_PHONE_ID) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'META_PHONE_ID required in production' });
     if (!data.REDIS_URL) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'REDIS_URL required in production for message durability' });
+    if (!data.UPSTASH_REDIS_REST_URL) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'UPSTASH_REDIS_REST_URL required in production for rate limiting' });
+    if (!data.UPSTASH_REDIS_REST_TOKEN) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'UPSTASH_REDIS_REST_TOKEN required in production for rate limiting' });
   }
   // Guard: meta provider requires tokens
   if (data.MESSAGING_PROVIDER === 'meta') {

@@ -20,6 +20,12 @@ importers:
       '@fastify/cors':
         specifier: ^11.2.0
         version: 11.2.0
+      '@types/node':
+        specifier: ^20.19.40
+        version: 20.19.41
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.0
       '@upstash/redis':
         specifier: ^1.38.0
         version: 1.38.0
@@ -44,16 +50,16 @@ importers:
       razorpay:
         specifier: ^2.9.6
         version: 2.9.6
+      tsx:
+        specifier: ^4.22.0
+        version: 4.22.0
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
       zod:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@types/node':
-        specifier: ^20.19.40
-        version: 20.19.41
-      '@types/pg':
-        specifier: ^8.20.0
-        version: 8.20.0
       nodemon:
         specifier: ^3.1.0
         version: 3.1.14
@@ -63,12 +69,6 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@20.19.41)(typescript@6.0.3)
-      tsx:
-        specifier: ^4.22.0
-        version: 4.22.0
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
       vitest:
         specifier: ^4.1.6
         version: 4.1.6(@types/node@20.19.41)(vite@8.0.13(@types/node@20.19.41)(esbuild@0.28.0)(jiti@2.7.0)(tsx@4.22.0))

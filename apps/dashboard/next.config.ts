@@ -1,18 +1,21 @@
 import type { NextConfig } from "next";
+import os from "os";
 
-// On Vercel, VERCEL=1 is set automatically — skip local path overrides.
-// Locally these are needed to work around iCloud Desktop's symlink sandbox.
-const isVercel = Boolean(process.env.VERCEL);
+// turbopack.root needs to be broad enough to encompass all file lookups.
+// Turbopack traverses upward from src/app/, finds pnpm-workspace.yaml at the
+// monorepo root, then uses that as the workspace root for package resolution.
+// Setting root to the HOME directory ensures all node_modules paths resolve
+// correctly in any environment:
+//   - Locally:  /Users/rindrajith  (same as the original hardcoded value)
+//   - Vercel:   /vercel            (the Vercel runner home dir)
+//   - Railway:  /root              (typical Linux container home)
+const homeDir = os.homedir();
 
 const nextConfig: NextConfig = {
-  ...(isVercel
-    ? {}
-    : {
-        // Allows Turbopack to resolve symlinked node_modules outside the project
-        // directory when running on a macOS desktop with iCloud Drive sync.
-        outputFileTracingRoot: "/Users/rindrajith",
-        turbopack: { root: "/Users/rindrajith" },
-      }),
+  outputFileTracingRoot: homeDir,
+  turbopack: {
+    root: homeDir,
+  },
 };
 
 export default nextConfig;

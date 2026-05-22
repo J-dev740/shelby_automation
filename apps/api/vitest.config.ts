@@ -17,7 +17,9 @@ export default defineConfig({
     env: {
       META_API_TOKEN: '',
       META_PHONE_ID: '',
-      META_VERIFY_TOKEN: 'MOCK_VERIFY_TOKEN'
+      META_VERIFY_TOKEN: 'MOCK_VERIFY_TOKEN',
+      MESSAGING_PROVIDER: 'mock',
+      META_APP_SECRET: ''
     }
   },
 });

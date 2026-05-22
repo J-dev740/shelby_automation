@@ -1,5 +1,6 @@
 import fastify from 'fastify';
 import cors from '@fastify/cors';
+import crypto from 'crypto';
 import { env } from './config/env.js';
 import metaWebhookRoutes from './routes/webhook.meta.js';
 import razorpayWebhookRoutes from './routes/webhook.razorpay.js';
@@ -8,10 +9,15 @@ import rateLimitPlugin from './plugins/rate-limit.plugin.js';
 
 export async function buildApp() {
   const app = fastify({
+    genReqId: (req) => (req.headers['x-request-id'] as string) || crypto.randomUUID(),
     logger: {
       level: env.NODE_ENV === 'production' ? 'info' : 'debug',
       transport: env.NODE_ENV !== 'production' ? { target: 'pino-pretty' } : undefined,
     },
+  });
+
+  app.addHook('onSend', async (request, reply, payload) => {
+    reply.header('X-Request-Id', request.id);
   });
 
   // Capture raw body for HMAC verification

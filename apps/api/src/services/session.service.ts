@@ -6,10 +6,12 @@ export interface Customer {
   display_name: string | null;
 }
 
+export type SessionState = 'idle' | 'browsing_categories' | 'browsing_items' | 'ordering' | 'checkout_confirm' | 'handoff_active';
+
 export interface Session {
   id: string;
   customer_id: string;
-  state: 'idle' | 'ordering' | 'handoff_active';
+  state: SessionState;
   cart_json: any[];
   context_json: any;
   last_activity_at: Date;

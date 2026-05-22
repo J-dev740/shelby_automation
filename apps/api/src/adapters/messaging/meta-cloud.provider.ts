@@ -1,4 +1,5 @@
-import { MessagingProvider } from './provider.interface.js';
+import { MessagingProvider, ListSection } from './provider.interface.js';
+import { metaApiCircuitBreaker } from '../../lib/circuit-breaker.js';
 
 // Production-ready adapter that speaks the Meta API contract.
 // This EXACT file will be used in Phase 1 production.
@@ -16,37 +17,42 @@ export class MetaCloudProvider implements MessagingProvider {
     }
 
     const url = `https://graph.facebook.com/${this.apiVersion}/${this.phoneId}/messages`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-
+    
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to,
-          ...payload
-        }),
-        signal: controller.signal,
-      });
+      await metaApiCircuitBreaker.fire(async () => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${this.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messaging_product: "whatsapp",
+              recipient_type: "individual",
+              to,
+              ...payload
+            }),
+            signal: controller.signal,
+          });
 
-      if (!response.ok) {
-        const error = await response.text();
-        console.error('[Meta API Error]', response.status, error);
-        // ROLLBACK: Print to terminal so message is never silently lost
-        console.log(`\n💬 [ROLLBACK TO TERMINAL — Meta API ${response.status} for ${to}]:`, JSON.stringify(payload, null, 2), '\n');
-      }
+          if (!response.ok) {
+            const error = await response.text();
+            console.error('[Meta API Error]', response.status, error);
+            throw new Error(`Meta API Error: ${response.status} ${error}`);
+          }
+        } finally {
+          clearTimeout(timeout);
+        }
+      });
     } catch (err: any) {
-      console.error('[Meta API Network Error]', err.message);
+      console.error('[Meta API/CircuitBreaker Error]', err.message);
       // ROLLBACK: Print to terminal
-      console.log(`\n💬 [ROLLBACK TO TERMINAL — Network error for ${to}]:`, JSON.stringify(payload, null, 2), '\n');
-    } finally {
-      clearTimeout(timeout);
+      console.log(`\n💬 [ROLLBACK TO TERMINAL — Failed to send to ${to}]:`, JSON.stringify(payload, null, 2), '\n');
+      throw err; // Re-throw so Outbound Queue can retry
     }
   }
 
@@ -65,6 +71,47 @@ export class MetaCloudProvider implements MessagingProvider {
             type: 'reply',
             reply: { id: b.id, title: b.title }
           }))
+        }
+      }
+    });
+  }
+
+  async sendListMessage(to: string, body: string, buttonText: string, sections: ListSection[]) {
+    return this.sendMessage(to, {
+      type: 'interactive',
+      interactive: {
+        type: 'list',
+        body: { text: body },
+        action: {
+          button: buttonText,
+          sections: sections
+        }
+      }
+    });
+  }
+
+  async sendImage(to: string, imageUrl: string, caption?: string) {
+    return this.sendMessage(to, {
+      type: 'image',
+      image: {
+        link: imageUrl,
+        caption: caption
+      }
+    });
+  }
+
+  async sendCTAButton(to: string, body: string, buttonText: string, url: string) {
+    return this.sendMessage(to, {
+      type: 'interactive',
+      interactive: {
+        type: 'cta_url',
+        body: { text: body },
+        action: {
+          name: 'cta_url',
+          parameters: {
+            display_text: buttonText,
+            url: url
+          }
         }
       }
     });

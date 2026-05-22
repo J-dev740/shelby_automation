@@ -2,6 +2,9 @@ import { env } from './config/env.js';
 import { buildApp } from './app.js';
 
 import { pool } from './lib/db.js';
+import { inboundWorker } from './services/queue.service.js';
+import { outboundWorker } from './services/outbound-queue.service.js';
+import { redisConnection } from './lib/redis.js';
 
 const start = async () => {
   const app = await buildApp();
@@ -18,6 +21,18 @@ const start = async () => {
     const shutdown = async (signal: string) => {
       app.log.info(`Received ${signal}. Shutting down gracefully...`);
       await app.close();
+      if (inboundWorker) {
+        app.log.info('Closing inbound worker...');
+        await inboundWorker.close();
+      }
+      if (outboundWorker) {
+        app.log.info('Closing outbound worker...');
+        await outboundWorker.close();
+      }
+      if (redisConnection) {
+        app.log.info('Disconnecting Redis...');
+        redisConnection.disconnect();
+      }
       await pool.end();
       process.exit(0);
     };

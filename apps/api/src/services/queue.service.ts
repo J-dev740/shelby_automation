@@ -1,34 +1,26 @@
 import { Queue, Worker } from 'bullmq';
-import { Redis } from 'ioredis';
-import { env } from '../config/env.js';
-import { MetaCloudProvider } from '../adapters/messaging/meta-cloud.provider.js';
-import { MockMessagingProvider } from '../adapters/messaging/mock.provider.js';
-import { MessagingProvider } from '../adapters/messaging/provider.interface.js';
+import { redisConnection } from '../lib/redis.js';
+
+import { QueueMessagingProvider } from '../adapters/messaging/queue.provider.js';
 import { handleIncomingMessage } from '../orchestrator/fsm.js';
 
 let inboundQueue: Queue | null = null;
-let inboundWorker: Worker | null = null;
+export let inboundWorker: Worker | null = null;
 
-const provider: MessagingProvider = env.MESSAGING_PROVIDER === 'meta'
-  ? new MetaCloudProvider(env.META_API_TOKEN || '', env.META_PHONE_ID || '', env.META_API_VERSION)
-  : new MockMessagingProvider();
+const provider = new QueueMessagingProvider();
 
 
-// Initialize BullMQ if REDIS_URL is provided
-if (env.REDIS_URL) {
+// Initialize BullMQ if redisConnection is available
+if (redisConnection) {
   try {
-    const connection = new Redis(env.REDIS_URL, {
-      maxRetriesPerRequest: null,
-    });
-
-    inboundQueue = new Queue('inbound-message', { connection });
+    inboundQueue = new Queue('inbound-message', { connection: redisConnection });
 
     inboundWorker = new Worker('inbound-message', async job => {
       const { from, message } = job.data;
       console.log(`[BullMQ Worker] Processing job ${job.id} for ${from}`);
       await handleIncomingMessage(from, message, provider);
     }, { 
-      connection,
+      connection: redisConnection,
       removeOnComplete: { count: 1000 },
       removeOnFail: { count: 5000 },
     });
@@ -39,7 +31,7 @@ if (env.REDIS_URL) {
 
     console.log('✅ BullMQ inbound-message queue initialized');
   } catch (err) {
-    console.error('❌ Failed to initialize BullMQ with Redis:', err);
+    console.error('❌ Failed to initialize BullMQ inbound worker:', err);
   }
 } else {
   console.log('ℹ️ REDIS_URL not set. Using in-memory queue fallback for inbound messages.');

@@ -2,8 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { env } from '../config/env.js';
 import { db } from '../lib/db.js';
 import { MESSAGES } from '../orchestrator/messages.js';
-import { MetaCloudProvider } from '../adapters/messaging/meta-cloud.provider.js';
-import { MockMessagingProvider } from '../adapters/messaging/mock.provider.js';
+import { QueueMessagingProvider } from '../adapters/messaging/queue.provider.js';
 
 export default async function supabaseWebhookRoutes(fastify: FastifyInstance) {
   fastify.post('/webhook/supabase/order-ready', async (request, reply) => {
@@ -29,9 +28,7 @@ export default async function supabaseWebhookRoutes(fastify: FastifyInstance) {
         if (custRes.rowCount && custRes.rowCount > 0) {
           const phone = custRes.rows[0].phone_e164;
           
-          const provider = env.MESSAGING_PROVIDER === 'meta'
-            ? new MetaCloudProvider(env.META_API_TOKEN || '', env.META_PHONE_ID || '', env.META_API_VERSION)
-            : new MockMessagingProvider();
+          const provider = new QueueMessagingProvider();
 
           await provider.sendText(phone, MESSAGES.ORDER_READY(newRecord.order_code));
         }

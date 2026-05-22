@@ -1,14 +1,39 @@
 import { db, pool } from '../lib/db.js';
 
 const CATEGORIES = [
-  { id: 'c1000000-0000-4000-8000-000000000001', slug: 'coffee', name: 'Coffee', sort_order: 1 },
-  { id: 'c2000000-0000-4000-8000-000000000002', slug: 'tea', name: 'Tea', sort_order: 2 }
+  { id: 'c1000000-0000-4000-8000-000000000001', slug: 'milk-tea', name: 'Milk Tea', sort_order: 1 },
+  { id: 'c2000000-0000-4000-8000-000000000002', slug: 'black-tea', name: 'Black Tea', sort_order: 2 },
+  { id: 'c3000000-0000-4000-8000-000000000003', slug: 'milk-coffee', name: 'Milk Coffee', sort_order: 3 },
+  { id: 'c4000000-0000-4000-8000-000000000004', slug: 'black-coffee', name: 'Black Coffee', sort_order: 4 },
+  { id: 'c5000000-0000-4000-8000-000000000005', slug: 'special', name: 'Special', sort_order: 5 },
+  { id: 'c6000000-0000-4000-8000-000000000006', slug: 'cold-coffee', name: 'Cold Coffee', sort_order: 6 },
+  { id: 'c7000000-0000-4000-8000-000000000007', slug: 'mojito', name: 'Mojito', sort_order: 7 },
 ];
 
 const MENU_ITEMS = [
-  { id: 'b1000000-0000-4000-8000-000000000001', category_id: 'c1000000-0000-4000-8000-000000000001', slug: 'cold-coffee', name: 'Cold Coffee', price_inr: 150, prep_time_min: 5, sort_order: 1 },
-  { id: 'b1000000-0000-4000-8000-000000000002', category_id: 'c1000000-0000-4000-8000-000000000001', slug: 'hazelnut-cold-coffee', name: 'Hazelnut Cold Coffee', price_inr: 180, prep_time_min: 5, sort_order: 2 },
-  { id: 'b2000000-0000-4000-8000-000000000001', category_id: 'c2000000-0000-4000-8000-000000000002', slug: 'masala-tea', name: 'Masala Tea', price_inr: 80, prep_time_min: 5, sort_order: 1 }
+  // Milk Tea
+  { id: 'm1000000-0000-4000-8000-000000000001', category_id: 'c1000000-0000-4000-8000-000000000001', slug: 'rose-tea', name: 'Rose Tea', price_inr: 40, prep_time_min: 3, sort_order: 1 },
+  { id: 'm1000000-0000-4000-8000-000000000002', category_id: 'c1000000-0000-4000-8000-000000000001', slug: 'masala-tea', name: 'Masala Tea', price_inr: 40, prep_time_min: 4, sort_order: 2 },
+  
+  // Black Tea
+  { id: 'm2000000-0000-4000-8000-000000000001', category_id: 'c2000000-0000-4000-8000-000000000002', slug: 'lemon-honey', name: 'Lemon Honey Tea', price_inr: 35, prep_time_min: 3, sort_order: 1 },
+
+  // Milk Coffee
+  { id: 'm3000000-0000-4000-8000-000000000001', category_id: 'c3000000-0000-4000-8000-000000000003', slug: 'shelby-signature', name: 'Shelby Signature Coffee', price_inr: 50, prep_time_min: 4, sort_order: 1 },
+  { id: 'm3000000-0000-4000-8000-000000000002', category_id: 'c3000000-0000-4000-8000-000000000003', slug: 'hazelnut-coffee', name: 'Hazelnut Coffee', price_inr: 70, prep_time_min: 4, sort_order: 2 },
+
+  // Black Coffee
+  { id: 'm4000000-0000-4000-8000-000000000001', category_id: 'c4000000-0000-4000-8000-000000000004', slug: 'black-coffee', name: 'Black Coffee', price_inr: 25, prep_time_min: 3, sort_order: 1 },
+
+  // Special
+  { id: 'm5000000-0000-4000-8000-000000000001', category_id: 'c5000000-0000-4000-8000-000000000005', slug: 'hot-chocolate', name: 'Hot Chocolate', price_inr: 80, prep_time_min: 5, sort_order: 1 },
+  
+  // Cold Coffee
+  { id: 'm6000000-0000-4000-8000-000000000001', category_id: 'c6000000-0000-4000-8000-000000000006', slug: 'premium-cold-coffee', name: 'Premium Cold Coffee', price_inr: 150, prep_time_min: 5, sort_order: 1 },
+  { id: 'm6000000-0000-4000-8000-000000000002', category_id: 'c6000000-0000-4000-8000-000000000006', slug: 'irish-cold-coffee', name: 'Irish Cold Coffee', price_inr: 180, prep_time_min: 5, sort_order: 2 },
+
+  // Mojito
+  { id: 'm7000000-0000-4000-8000-000000000001', category_id: 'c7000000-0000-4000-8000-000000000007', slug: 'watermelon-mojito', name: 'Watermelon Mojito', price_inr: 90, prep_time_min: 4, sort_order: 1 },
 ];
 
 async function seedMenu() {

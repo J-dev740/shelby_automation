@@ -3,7 +3,7 @@ builder = "nixpacks"
 buildCommand = "pnpm --filter api build"
 
 [deploy]
-startCommand = "cd apps/api && node dist/server.js"
+startCommand = "cd apps/api && pnpm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"

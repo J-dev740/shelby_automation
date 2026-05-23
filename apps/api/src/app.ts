@@ -30,15 +30,38 @@ export async function buildApp() {
     }
   });
 
+  // Webhook routes are called by Meta/Razorpay/Supabase servers — not browsers.
+  // CORS does not apply to server-to-server requests (no Origin header), so these
+  // calls are always allowed. For browser-originated requests we keep a restrictive
+  // allowlist. HMAC signature verification remains the real auth layer for webhooks.
   await app.register(cors, {
-    origin: env.NODE_ENV === 'production'
-      ? [
-          // Allow any *.vercel.app subdomain (preview deploys) + explicit production domain
-          /\.vercel\.app$/,
-          // TODO: Replace with your custom domain once you have one, e.g.:
-          // 'https://dashboard.shelby.cafe'
-        ]
-      : [/^http:\/\/localhost:\d+$/],  // dev: any localhost port
+    origin: (origin, cb) => {
+      // No Origin header → server-to-server call (Meta, Razorpay, Supabase, etc.)
+      if (origin === undefined || origin === null) {
+        cb(null, true);
+        return;
+      }
+
+      // Browser requests: restrict to known origins
+      const allowedBrowserOrigins: Array<string | RegExp> =
+        env.NODE_ENV === 'production'
+          ? [
+              /\.vercel\.app$/,
+              // Add your custom domain here once live, e.g.:
+              // 'https://dashboard.shelby.cafe',
+            ]
+          : [/^http:\/\/localhost:\d+$/];
+
+      const allowed = allowedBrowserOrigins.some(pattern =>
+        typeof pattern === 'string' ? pattern === origin : pattern.test(origin),
+      );
+
+      if (!allowed) {
+        app.log.warn({ origin }, '[CORS] Rejected browser request from unlisted origin');
+      }
+
+      cb(null, allowed);
+    },
     credentials: true,
   });
 

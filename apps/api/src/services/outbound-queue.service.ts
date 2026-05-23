@@ -16,6 +16,9 @@ const provider: MessagingProvider = env.MESSAGING_PROVIDER === 'meta'
 if (redisConnection) {
   try {
     outboundQueue = new Queue('outbound-message', { connection: redisConnection });
+    outboundQueue.on('error', (err) => {
+      console.error(`[BullMQ Outbound Queue] Connection error:`, err.message);
+    });
 
     outboundWorker = new Worker('outbound-message', async job => {
       const { to, method, args } = job.data;
@@ -39,6 +42,10 @@ if (redisConnection) {
 
     outboundWorker.on('failed', (job, err) => {
       console.error(`[BullMQ Outbound Worker] Job ${job?.id} failed:`, err);
+    });
+
+    outboundWorker.on('error', (err) => {
+      console.error(`[BullMQ Outbound Worker] Connection/Internal error:`, err.message);
     });
 
     console.log('✅ BullMQ outbound-message queue initialized');

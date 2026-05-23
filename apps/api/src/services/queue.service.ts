@@ -14,6 +14,9 @@ const provider = new QueueMessagingProvider();
 if (redisConnection) {
   try {
     inboundQueue = new Queue('inbound-message', { connection: redisConnection });
+    inboundQueue.on('error', (err) => {
+      console.error(`[BullMQ Inbound Queue] Connection error:`, err.message);
+    });
 
     inboundWorker = new Worker('inbound-message', async job => {
       const { from, message } = job.data;
@@ -27,6 +30,10 @@ if (redisConnection) {
 
     inboundWorker.on('failed', (job, err) => {
       console.error(`[BullMQ Worker] Job ${job?.id} failed:`, err);
+    });
+
+    inboundWorker.on('error', (err) => {
+      console.error(`[BullMQ Inbound Worker] Connection/Internal error:`, err.message);
     });
 
     console.log('✅ BullMQ inbound-message queue initialized');

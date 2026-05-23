@@ -5,9 +5,11 @@ export let redisConnection: Redis | null = null;
 
 if (env.REDIS_URL) {
   try {
+    console.log(`[Redis] Connecting to: ${env.REDIS_URL.substring(0, 15)}...`);
     redisConnection = new Redis(env.REDIS_URL, {
       maxRetriesPerRequest: null,
-      family: 0,
+      family: 4, // Force IPv4 (Railway sometimes struggles with IPv6 outbound to Upstash)
+      enableReadyCheck: false,
       keepAlive: 10000,
       tls: env.REDIS_URL.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined,
     });

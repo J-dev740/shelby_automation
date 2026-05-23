@@ -7,7 +7,7 @@
     "test": "vitest run",
     "dev": "nodemon --exec tsx src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "tsx src/scripts/migrate.ts && tsx src/scripts/seed-menu.ts && node dist/server.js",
     "seed:menu": "tsx src/scripts/seed-menu.ts",
     "simulate": "tsx src/scripts/simulate-webhook.ts"
   },

@@ -11,9 +11,12 @@ export async function handleIncomingMessage(
   message: any, 
   provider: MessagingProvider
 ) {
+  // [STEP 1] Load or create session
+  console.log(`[FSM:START] from=${from} msgType=${message.type}`);
   let session = await sessionService.getOrCreateSession(from);
+  console.log(`[FSM:SESSION] id=${session.id} state=${session.state} cartLen=${session.cart_json?.length ?? 0}`);
   
-  // 1. Extract intent (cheap layer: buttons first, then text)
+  // [STEP 2] Extract intent
   let input = '';
   if (message.type === 'text') input = message.text.body.toLowerCase().trim();
   if (message.type === 'interactive' && message.interactive.type === 'button_reply') {
@@ -22,11 +25,11 @@ export async function handleIncomingMessage(
   if (message.type === 'interactive' && message.interactive.type === 'list_reply') {
     input = message.interactive.list_reply.id;
   }
-
-  console.log(`[FSM] User: ${from} | State: ${session.state} | Input: ${input}`);
+  console.log(`[FSM:INPUT] input="${input}" state=${session.state}`);
 
   // Handle reset from any state
   if (input === 'reset') {
+    console.log(`[FSM:RESET] Resetting session for ${from}`);
     await sessionService.updateSession(session.id, { state: 'idle', cart_json: [] });
     await provider.sendText(from, MESSAGES.RESET_SUCCESS);
     return;
@@ -34,10 +37,12 @@ export async function handleIncomingMessage(
 
   // If handoff is active, stay silent unless they reset
   if (session.state === 'handoff_active') {
+    console.log(`[FSM:HANDOFF] Session is in handoff mode — ignoring message`);
     return;
   }
 
   if (input === 'btn_handoff' || input === 'action_handoff') {
+    console.log(`[FSM:HANDOFF] Engaging handoff for ${from}`);
     await sessionService.updateSession(session.id, { state: 'handoff_active' });
     await provider.sendText(from, MESSAGES.HANDOFF_ACTIVE);
     return;
@@ -45,41 +50,57 @@ export async function handleIncomingMessage(
 
   // --- WELCOME / IDLE ---
   if (input === 'hi' || input === 'hello' || input === 'menu' || session.state === 'idle') {
+    console.log(`[FSM:WELCOME] Checking digital lane status...`);
     if (await settingsService.isDigitalLanePaused()) {
+      console.log(`[FSM:WELCOME] Digital lane is PAUSED`);
       await provider.sendText(from, MESSAGES.DIGITAL_LANE_PAUSED);
       return;
     }
 
     await sessionService.updateSession(session.id, { state: 'browsing_categories', cart_json: [] });
-    
-    // Fetch categories
+    console.log(`[FSM:WELCOME] Fetching active menu categories...`);
     const catRes = await db.query(`SELECT id, name FROM menu_categories WHERE active = true ORDER BY sort_order`);
-    const rows = catRes.rows.map(c => ({ id: `cat_${c.id}`, title: c.name }));
+    console.log(`[FSM:WELCOME] Found ${catRes.rowCount} categories`);
 
+    if (!catRes.rows || catRes.rows.length === 0) {
+      console.log(`[FSM:WELCOME] WARNING — No categories in DB! Seed may not have run.`);
+      await provider.sendText(from, 'Our menu is being updated. Please try again in a moment!');
+      return;
+    }
+
+    const rows = catRes.rows.map(c => ({ id: `cat_${c.id}`, title: c.name.substring(0, 24) }));
+    console.log(`[FSM:WELCOME] Sending welcome text + category list to ${from}`);
     await provider.sendText(from, MESSAGES.WELCOME);
     await provider.sendListMessage(from, MESSAGES.CATEGORY_PROMPT, 'View Menu', [
       { title: 'Categories', rows }
     ]);
+    console.log(`[FSM:WELCOME] Done — state=browsing_categories`);
     return;
   }
 
   // --- BROWSING CATEGORIES -> Select Category ---
   if (session.state === 'browsing_categories' && input.startsWith('cat_')) {
     const catId = input.replace('cat_', '');
-    const itemRes = await db.query(`SELECT id, name, price_inr FROM menu_items WHERE category_id = $1 AND active = true ORDER BY sort_order`, [catId]);
+    console.log(`[FSM:CAT] User selected catId=${catId}`);
+    const itemRes = await db.query(
+      `SELECT id, name, price_inr FROM menu_items WHERE category_id = $1 AND active = true ORDER BY sort_order`,
+      [catId]
+    );
+    console.log(`[FSM:CAT] Found ${itemRes.rowCount} items in category`);
     
-    if (itemRes.rowCount === 0) {
-      await provider.sendText(from, "No items found in this category.");
+    if (!itemRes.rows || itemRes.rows.length === 0) {
+      await provider.sendText(from, 'No items found in this category.');
       return;
     }
 
     const rows = itemRes.rows.map(item => ({
       id: `item_${item.id}`,
-      title: item.name,
-      description: `₹${item.price_inr}`
+      title: item.name.substring(0, 24),
+      description: `Rs.${item.price_inr}`
     }));
 
     await sessionService.updateSession(session.id, { state: 'browsing_items' });
+    console.log(`[FSM:CAT] Sending item list — state=browsing_items`);
     await provider.sendListMessage(from, MESSAGES.ITEM_PROMPT, 'Select Item', [
       { title: 'Drinks & Food', rows }
     ]);
@@ -89,16 +110,19 @@ export async function handleIncomingMessage(
   // --- BROWSING ITEMS -> Select Item ---
   if ((session.state === 'browsing_items' || session.state === 'browsing_categories') && input.startsWith('item_')) {
     const itemId = input.replace('item_', '');
-    const itemRes = await db.query(`SELECT id, name, price_inr FROM menu_items WHERE id = $1 AND active = true`, [itemId]);
+    console.log(`[FSM:ITEM] User selected itemId=${itemId}`);
+    const itemRes = await db.query(
+      `SELECT id, name, price_inr FROM menu_items WHERE id = $1 AND active = true`,
+      [itemId]
+    );
     
-    if (itemRes.rowCount === 0) {
+    if (!itemRes.rows || itemRes.rows.length === 0) {
+      console.log(`[FSM:ITEM] Item not found or inactive — itemId=${itemId}`);
       await provider.sendText(from, MESSAGES.ITEM_UNAVAILABLE);
       return;
     }
 
     const item = itemRes.rows[0];
-    
-    // Check if item is already in cart, if so, increase qty
     let newCart = [...session.cart_json];
     const existingIdx = newCart.findIndex((l: any) => l.itemId === itemId);
     let qty = 1;
@@ -108,22 +132,25 @@ export async function handleIncomingMessage(
     } else {
       newCart.push({ itemId, qty: 1, modifierIds: [] });
     }
+    console.log(`[FSM:ITEM] Added ${item.name} x${qty} to cart. cartLen=${newCart.length}`);
 
     await sessionService.updateSession(session.id, { state: 'ordering', cart_json: newCart });
-    
+    // Button titles kept under 20 chars (Meta API hard limit)
     await provider.sendInteractiveButtons(from, MESSAGES.ADDED_TO_CART(qty, item.name, item.price_inr * qty), [
-      { id: 'btn_view_cart', title: '🛒 View Cart' },
-      { id: 'btn_menu', title: '➕ Add More' },
-      { id: 'btn_checkout', title: '✅ Checkout' }
+      { id: 'btn_view_cart', title: 'View Cart' },
+      { id: 'btn_menu',     title: 'Add More Items' },
+      { id: 'btn_checkout', title: 'Checkout' }
     ]);
+    console.log(`[FSM:ITEM] Sent cart buttons — state=ordering`);
     return;
   }
 
   // --- ORDERING -> Add More ---
   if ((session.state === 'ordering' || session.state === 'checkout_confirm') && input === 'btn_menu') {
+    console.log(`[FSM:ADDMORE] Returning to category browse`);
     await sessionService.updateSession(session.id, { state: 'browsing_categories' });
     const catRes = await db.query(`SELECT id, name FROM menu_categories WHERE active = true ORDER BY sort_order`);
-    const rows = catRes.rows.map(c => ({ id: `cat_${c.id}`, title: c.name }));
+    const rows = catRes.rows.map(c => ({ id: `cat_${c.id}`, title: c.name.substring(0, 24) }));
     await provider.sendListMessage(from, MESSAGES.CATEGORY_PROMPT, 'View Menu', [
       { title: 'Categories', rows }
     ]);
@@ -133,34 +160,39 @@ export async function handleIncomingMessage(
   // --- ORDERING -> View Cart / Checkout ---
   if (session.state === 'ordering' && (input === 'btn_view_cart' || input === 'btn_checkout')) {
     if (!session.cart_json || session.cart_json.length === 0) {
+      console.log(`[FSM:CART] Cart is empty`);
       await provider.sendText(from, MESSAGES.CART_EMPTY);
       return;
     }
 
-    // Build cart summary
-    let cartLines = [];
+    console.log(`[FSM:CART] Building summary for ${session.cart_json.length} cart line(s)...`);
+    let cartLines: string[] = [];
     let total = 0;
     for (const line of session.cart_json) {
       const itemRes = await db.query(`SELECT name, price_inr FROM menu_items WHERE id = $1`, [line.itemId]);
-      if (itemRes.rowCount && itemRes.rowCount > 0) {
+      if (itemRes.rows && itemRes.rows.length > 0) {
         const item = itemRes.rows[0];
         const lineTotal = item.price_inr * line.qty;
         total += lineTotal;
-        cartLines.push(`• ${line.qty}x ${item.name} (₹${lineTotal})`);
+        cartLines.push(`• ${line.qty}x ${item.name} (Rs.${lineTotal})`);
       }
     }
+    console.log(`[FSM:CART] total=Rs.${total} — sending checkout confirm`);
 
     await sessionService.updateSession(session.id, { state: 'checkout_confirm' });
+    // Button titles kept under 20 chars
     await provider.sendInteractiveButtons(from, MESSAGES.CHECKOUT_CONFIRM(cartLines, total), [
-      { id: 'btn_confirm_order', title: '🚀 Place Order' },
-      { id: 'btn_menu', title: '✏️ Add More' },
-      { id: 'reset', title: '❌ Cancel' }
+      { id: 'btn_confirm_order', title: 'Place Order' },
+      { id: 'btn_menu',         title: 'Add More Items' },
+      { id: 'reset',            title: 'Cancel Order' }
     ]);
+    console.log(`[FSM:CART] Done — state=checkout_confirm`);
     return;
   }
 
   // --- CHECKOUT CONFIRM -> Place Order ---
   if (session.state === 'checkout_confirm' && input === 'btn_confirm_order') {
+    console.log(`[FSM:ORDER] Placing order for customerId=${session.customer_id}...`);
     if (await settingsService.isDigitalLanePaused()) {
       await provider.sendText(from, MESSAGES.DIGITAL_LANE_PAUSED);
       return;
@@ -172,27 +204,30 @@ export async function handleIncomingMessage(
         lines: session.cart_json,
         idempotencyKey: `order:${message.id}`
       });
+      console.log(`[FSM:ORDER] Created orderCode=${orderRes.orderCode} total=Rs.${orderRes.pricedCart.total}`);
 
       await sessionService.updateSession(session.id, { state: 'idle', cart_json: [] });
       const itemNames = orderRes.pricedCart.lines.map(l => `${l.qty}x ${l.itemName}`).join(', ');
       
       let paymentLinkUrl: string | undefined;
       if (razorpayService.isConfigured()) {
+        console.log(`[FSM:ORDER] Creating Razorpay payment link...`);
         const plink = await razorpayService.createPaymentLink(
-          orderRes.orderId,
-          orderRes.orderCode,
-          orderRes.pricedCart.total,
-          from
+          orderRes.orderId, orderRes.orderCode, orderRes.pricedCart.total, from
         );
         await orderService.updatePaymentIntent(orderRes.orderId, plink.id, 'razorpay');
         paymentLinkUrl = plink.short_url;
+        console.log(`[FSM:ORDER] Payment link: ${paymentLinkUrl}`);
+      } else {
+        console.log(`[FSM:ORDER] Razorpay not configured — skipping payment link`);
       }
 
-      await provider.sendText(
-        from, 
+      await provider.sendText(from, 
         MESSAGES.ORDER_CONFIRMED(orderRes.orderCode, itemNames, orderRes.pricedCart.maxPrepTimeMin, paymentLinkUrl)
       );
+      console.log(`[FSM:ORDER] Confirmation sent — state=idle`);
     } catch (err: any) {
+      console.error(`[FSM:ORDER] Error:`, err.message);
       if (err.message === 'Digital ordering lane is currently paused.') {
         await provider.sendText(from, MESSAGES.DIGITAL_LANE_PAUSED);
       } else {
@@ -202,6 +237,7 @@ export async function handleIncomingMessage(
     return;
   }
 
-  // Catch-all
+  // Catch-all — no handler matched
+  console.log(`[FSM:UNHANDLED] state=${session.state} input="${input}" — sending unrecognized message`);
   await provider.sendText(from, MESSAGES.UNRECOGNIZED_INPUT);
 }

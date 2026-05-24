@@ -40,9 +40,12 @@ export class MetaCloudProvider implements MessagingProvider {
           });
 
           if (!response.ok) {
-            const error = await response.text();
-            console.error('[Meta API Error]', response.status, error);
-            throw new Error(`Meta API Error: ${response.status} ${error}`);
+            const errorBody = await response.text();
+            console.error(`[Meta API Error] method=${payload.type} status=${response.status} body=${errorBody}`);
+            throw new Error(`Meta API Error: ${response.status} ${errorBody}`);
+          } else {
+            const respJson = await response.json() as any;
+            console.log(`[Meta API OK] method=${payload.type} msgId=${respJson?.messages?.[0]?.id ?? 'n/a'}`);
           }
         } finally {
           clearTimeout(timeout);
@@ -77,10 +80,12 @@ export class MetaCloudProvider implements MessagingProvider {
   }
 
   async sendListMessage(to: string, body: string, buttonText: string, sections: ListSection[]) {
+    // Meta REQUIRES a header for list messages — without it the API returns a silent 400
     return this.sendMessage(to, {
       type: 'interactive',
       interactive: {
         type: 'list',
+        header: { type: 'text', text: 'Shelby ☕' },
         body: { text: body },
         action: {
           button: buttonText,

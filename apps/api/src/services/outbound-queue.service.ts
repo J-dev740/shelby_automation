@@ -41,7 +41,8 @@ if (redisConnection) {
     });
 
     outboundWorker.on('failed', (job, err) => {
-      console.error(`[BullMQ Outbound Worker] Job ${job?.id} failed:`, err);
+      const { to, method } = job?.data ?? {};
+      console.error(`[BullMQ Outbound] FAILED jobId=${job?.id} method=${method} to=${to} err=${err.message}`);
     });
 
     outboundWorker.on('error', (err) => {

@@ -27,11 +27,25 @@ export async function handleIncomingMessage(
   }
   console.log(`[FSM:INPUT] input="${input}" state=${session.state}`);
 
-  // Handle reset from any state
-  if (input === 'reset') {
+  // --- GLOBAL COMMANDS ---
+  // If the user sends an image, audio, or sticker, input will be empty
+  if (!input) {
+    console.log(`[FSM:UNRECOGNIZED] Non-text message type: ${message.type}`);
+    await provider.sendText(from, MESSAGES.UNRECOGNIZED_INPUT);
+    return;
+  }
+
+  if (input === 'cancel' || input === 'reset' || input === 'empty') {
     console.log(`[FSM:RESET] Resetting session for ${from}`);
-    await sessionService.updateSession(session.id, { state: 'idle', cart_json: [] });
+    await sessionService.clearSession(session.id);
     await provider.sendText(from, MESSAGES.RESET_SUCCESS);
+    return;
+  }
+
+  if (input === 'help' || input === 'staff' || input === 'btn_handoff' || input === 'action_handoff') {
+    console.log(`[FSM:HANDOFF] Engaging handoff for ${from}`);
+    await sessionService.updateSession(session.id, { state: 'handoff_active' });
+    await provider.sendText(from, MESSAGES.HANDOFF_ACTIVE);
     return;
   }
 
@@ -41,10 +55,42 @@ export async function handleIncomingMessage(
     return;
   }
 
-  if (input === 'btn_handoff' || input === 'action_handoff') {
-    console.log(`[FSM:HANDOFF] Engaging handoff for ${from}`);
-    await sessionService.updateSession(session.id, { state: 'handoff_active' });
-    await provider.sendText(from, MESSAGES.HANDOFF_ACTIVE);
+  if (input === 'cart' || input === 'action_cart') {
+    console.log(`[FSM:CART] User requested cart from state=${session.state}`);
+    const cart = session.cart_json || [];
+    if (cart.length === 0) {
+      await provider.sendText(from, MESSAGES.CART_EMPTY);
+      // Fall through to show the welcome menu
+      input = 'menu';
+    } else {
+      // In Step 4 we want to jump to the legacy checkout logic
+      // until Step 5 replaces it with cart_review
+      input = 'btn_view_cart';
+      // Fake the state to trick the legacy cart handler
+      session.state = 'ordering'; 
+    }
+  }
+
+  if (input === 'status' || input === 'track' || input === 'action_status') {
+    console.log(`[FSM:STATUS] Checking order status for ${from}`);
+    const recentOrder = await orderService.getRecentOrder(session.customer_id);
+    if (!recentOrder) {
+      await provider.sendText(from, MESSAGES.ORDER_NOT_FOUND);
+    } else {
+      let timeAgo = 'Just now';
+      const diffMin = Math.floor((new Date().getTime() - new Date(recentOrder.created_at).getTime()) / 60000);
+      if (diffMin > 0) timeAgo = `${diffMin} min${diffMin > 1 ? 's' : ''} ago`;
+      if (diffMin > 60) timeAgo = `${Math.floor(diffMin/60)} hour${Math.floor(diffMin/60) > 1 ? 's' : ''} ago`;
+      
+      const itemsStr = recentOrder.items ? recentOrder.items.map((i: any) => `${i.qty}x ${i.name}`).join(', ') : 'Unknown items';
+      await provider.sendText(from, MESSAGES.ORDER_STATUS(
+        recentOrder.order_code, 
+        recentOrder.state, 
+        timeAgo, 
+        itemsStr, 
+        Number(recentOrder.total_inr)
+      ));
+    }
     return;
   }
 
@@ -57,7 +103,8 @@ export async function handleIncomingMessage(
       return;
     }
 
-    await sessionService.updateSession(session.id, { state: 'browsing_categories', cart_json: [] });
+    // New state is 'browsing'. We clear the cart here as in legacy 'idle' -> 'browsing_categories'
+    await sessionService.updateSession(session.id, { state: 'browsing', cart_json: [] });
     console.log(`[FSM:WELCOME] Fetching active menu categories...`);
     const catRes = await db.query(`SELECT id, name FROM menu_categories WHERE active = true ORDER BY sort_order`);
     console.log(`[FSM:WELCOME] Found ${catRes.rowCount} categories`);
@@ -71,15 +118,22 @@ export async function handleIncomingMessage(
     const rows = catRes.rows.map(c => ({ id: `cat_${c.id}`, title: c.name.substring(0, 24) }));
     console.log(`[FSM:WELCOME] Sending welcome text + category list to ${from}`);
     await provider.sendText(from, MESSAGES.WELCOME);
+    
+    // New utility list layout
     await provider.sendListMessage(from, MESSAGES.CATEGORY_PROMPT, 'View Menu', [
-      { title: 'Categories', rows }
+      { title: 'Categories', rows },
+      { title: 'Options', rows: [
+        { id: 'action_cart', title: '🛒 View My Cart' },
+        { id: 'action_status', title: '📦 Track My Order' },
+        { id: 'action_handoff', title: '👋 Talk to Staff' }
+      ]}
     ]);
-    console.log(`[FSM:WELCOME] Done — state=browsing_categories`);
+    console.log(`[FSM:WELCOME] Done — state=browsing`);
     return;
   }
 
   // --- BROWSING CATEGORIES -> Select Category ---
-  if (session.state === 'browsing_categories' && input.startsWith('cat_')) {
+  if ((session.state === 'browsing' || session.state === 'browsing_categories') && input.startsWith('cat_')) {
     const catId = input.replace('cat_', '');
     console.log(`[FSM:CAT] User selected catId=${catId}`);
     const itemRes = await db.query(

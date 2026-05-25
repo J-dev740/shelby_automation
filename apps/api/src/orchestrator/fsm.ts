@@ -130,75 +130,14 @@ export async function handleIncomingMessage(
     return;
   }
 
-  // --- BROWSING CATEGORIES -> Select Category ---
-  if ((session.state === 'browsing' || session.state === 'browsing_categories') && input.startsWith('cat_')) {
-    const catId = input.replace('cat_', '');
-    console.log(`[FSM:CAT] User selected catId=${catId}`);
-    const itemRes = await db.query(
-      `SELECT id, name, price_inr FROM menu_items WHERE category_id = $1 AND active = true ORDER BY sort_order`,
-      [catId]
-    );
-    console.log(`[FSM:CAT] Found ${itemRes.rowCount} items in category`);
-    
-    if (!itemRes.rows || itemRes.rows.length === 0) {
-      await provider.sendText(from, 'No items found in this category.');
-      return;
-    }
-
-    const rows = itemRes.rows.map(item => ({
-      id: `item_${item.id}`,
-      title: item.name.substring(0, 24),
-      description: `Rs.${item.price_inr}`
-    }));
-
-    await sessionService.updateSession(session.id, { state: 'browsing_items' });
-    console.log(`[FSM:CAT] Sending item list — state=browsing_items`);
-    await provider.sendListMessage(from, MESSAGES.ITEM_PROMPT, 'Select Item', [
-      { title: 'Drinks & Food', rows }
-    ]);
+  // --- TEMPORARY INTERCEPT FOR CATEGORIES ---
+  if (session.state === 'browsing' && input.startsWith('cat_')) {
+    await provider.sendText(from, "🚧 We're upgrading our menu experience! The new interactive ordering menu will be available shortly.");
     return;
   }
 
-  // --- BROWSING ITEMS -> Select Item ---
-  if ((session.state === 'browsing_items' || session.state === 'browsing_categories') && input.startsWith('item_')) {
-    const itemId = input.replace('item_', '');
-    console.log(`[FSM:ITEM] User selected itemId=${itemId}`);
-    const itemRes = await db.query(
-      `SELECT id, name, price_inr FROM menu_items WHERE id = $1 AND active = true`,
-      [itemId]
-    );
-    
-    if (!itemRes.rows || itemRes.rows.length === 0) {
-      console.log(`[FSM:ITEM] Item not found or inactive — itemId=${itemId}`);
-      await provider.sendText(from, MESSAGES.ITEM_UNAVAILABLE);
-      return;
-    }
-
-    const item = itemRes.rows[0];
-    let newCart = [...session.cart_json];
-    const existingIdx = newCart.findIndex((l: any) => l.itemId === itemId);
-    let qty = 1;
-    if (existingIdx >= 0) {
-      newCart[existingIdx].qty += 1;
-      qty = newCart[existingIdx].qty;
-    } else {
-      newCart.push({ itemId, qty: 1, modifierIds: [] });
-    }
-    console.log(`[FSM:ITEM] Added ${item.name} x${qty} to cart. cartLen=${newCart.length}`);
-
-    await sessionService.updateSession(session.id, { state: 'ordering', cart_json: newCart });
-    // Button titles kept under 20 chars (Meta API hard limit)
-    await provider.sendInteractiveButtons(from, MESSAGES.ADDED_TO_CART(qty, item.name, item.price_inr * qty), [
-      { id: 'btn_view_cart', title: 'View Cart' },
-      { id: 'btn_menu',     title: 'Add More Items' },
-      { id: 'btn_checkout', title: 'Checkout' }
-    ]);
-    console.log(`[FSM:ITEM] Sent cart buttons — state=ordering`);
-    return;
-  }
-
-  // --- ORDERING -> Add More ---
-  if ((session.state === 'ordering' || session.state === 'checkout_confirm' || session.state === 'cart_review') && input === 'btn_menu') {
+  // --- ADD MORE ITEMS ---
+  if ((session.state === 'checkout' || session.state === 'cart_review') && input === 'btn_menu') {
     console.log(`[FSM:ADDMORE] Returning to category browse`);
     await sessionService.updateSession(session.id, { state: 'browsing' });
     const catRes = await db.query(`SELECT id, name FROM menu_categories WHERE active = true ORDER BY sort_order`);
@@ -212,13 +151,6 @@ export async function handleIncomingMessage(
       ]}
     ]);
     return;
-  }
-
-  // --- LEGACY CART TRIGGER ---
-  if (session.state === 'ordering' && (input === 'btn_view_cart' || input === 'btn_checkout')) {
-    await sessionService.updateSession(session.id, { state: 'cart_review' });
-    session.state = 'cart_review';
-    input = '__enter_cart_review';
   }
 
   // --- CART REVIEW ---
@@ -253,13 +185,13 @@ export async function handleIncomingMessage(
 
   // --- CART REVIEW -> CHECKOUT CONFIRM ---
   if (session.state === 'cart_review' && input === 'btn_flow_checkout') {
-    await sessionService.updateSession(session.id, { state: 'checkout_confirm' });
-    session.state = 'checkout_confirm';
-    input = '__enter_checkout_confirm';
+    await sessionService.updateSession(session.id, { state: 'checkout' });
+    session.state = 'checkout';
+    input = '__enter_checkout';
   }
 
   // --- CHECKOUT CONFIRM (Pre-Flow Fallback) ---
-  if (session.state === 'checkout_confirm' && input === '__enter_checkout_confirm') {
+  if (session.state === 'checkout' && input === '__enter_checkout') {
     let cartLines: string[] = [];
     let total = 0;
     for (const line of session.cart_json || []) {
@@ -280,7 +212,7 @@ export async function handleIncomingMessage(
   }
 
   // --- CHECKOUT CONFIRM -> PLACE ORDER ---
-  if (session.state === 'checkout_confirm' && (input === 'pay_counter' || input === 'pay_online' || input === 'btn_confirm_order')) {
+  if (session.state === 'checkout' && (input === 'pay_counter' || input === 'pay_online' || input === 'btn_confirm_order')) {
     console.log(`[FSM:ORDER] Placing order for customerId=${session.customer_id} mode=${input}...`);
     if (await settingsService.isDigitalLanePaused()) {
       await provider.sendText(from, MESSAGES.DIGITAL_LANE_PAUSED);

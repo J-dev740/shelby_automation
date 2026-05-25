@@ -13,12 +13,7 @@ export type SessionState =
   | 'flow_active'
   | 'cart_review'
   | 'checkout'
-  | 'handoff_active'
-  // Legacy states — will be removed in Step 6
-  | 'browsing_categories'
-  | 'browsing_items'
-  | 'ordering'
-  | 'checkout_confirm';
+  | 'handoff_active';
 
 export interface SessionContext {
   /** Last category ID the user was browsing (for Flow re-entry) */

@@ -123,5 +123,21 @@ export const orderService = {
       `UPDATE orders SET payment_intent_id = $1, payment_mode = $2 WHERE id = $3`,
       [intentId, mode, orderId]
     );
+  },
+
+  async getRecentOrder(customerId: string) {
+    const res = await db.query(
+      `SELECT o.id, o.order_code, o.state, o.total_inr, o.created_at,
+         json_agg(json_build_object('qty', oi.qty, 'name', mi.name)) as items
+       FROM orders o
+       LEFT JOIN order_items oi ON oi.order_id = o.id
+       LEFT JOIN menu_items mi ON mi.id = oi.item_id
+       WHERE o.customer_id = $1
+       GROUP BY o.id
+       ORDER BY o.created_at DESC
+       LIMIT 1`,
+      [customerId]
+    );
+    return res.rows[0] || null;
   }
 };

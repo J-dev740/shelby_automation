@@ -63,11 +63,9 @@ export async function handleIncomingMessage(
       // Fall through to show the welcome menu
       input = 'menu';
     } else {
-      // In Step 4 we want to jump to the legacy checkout logic
-      // until Step 5 replaces it with cart_review
-      input = 'btn_view_cart';
-      // Fake the state to trick the legacy cart handler
-      session.state = 'ordering'; 
+      await sessionService.updateSession(session.id, { state: 'cart_review' });
+      session.state = 'cart_review';
+      input = '__enter_cart_review';
     }
   }
 
@@ -200,21 +198,32 @@ export async function handleIncomingMessage(
   }
 
   // --- ORDERING -> Add More ---
-  if ((session.state === 'ordering' || session.state === 'checkout_confirm') && input === 'btn_menu') {
+  if ((session.state === 'ordering' || session.state === 'checkout_confirm' || session.state === 'cart_review') && input === 'btn_menu') {
     console.log(`[FSM:ADDMORE] Returning to category browse`);
-    await sessionService.updateSession(session.id, { state: 'browsing_categories' });
+    await sessionService.updateSession(session.id, { state: 'browsing' });
     const catRes = await db.query(`SELECT id, name FROM menu_categories WHERE active = true ORDER BY sort_order`);
     const rows = catRes.rows.map(c => ({ id: `cat_${c.id}`, title: c.name.substring(0, 24) }));
     await provider.sendListMessage(from, MESSAGES.CATEGORY_PROMPT, 'View Menu', [
-      { title: 'Categories', rows }
+      { title: 'Categories', rows },
+      { title: 'Options', rows: [
+        { id: 'action_cart', title: '🛒 View My Cart' },
+        { id: 'action_status', title: '📦 Track My Order' },
+        { id: 'action_handoff', title: '👋 Talk to Staff' }
+      ]}
     ]);
     return;
   }
 
-  // --- ORDERING -> View Cart / Checkout ---
+  // --- LEGACY CART TRIGGER ---
   if (session.state === 'ordering' && (input === 'btn_view_cart' || input === 'btn_checkout')) {
+    await sessionService.updateSession(session.id, { state: 'cart_review' });
+    session.state = 'cart_review';
+    input = '__enter_cart_review';
+  }
+
+  // --- CART REVIEW ---
+  if (session.state === 'cart_review' && input === '__enter_cart_review') {
     if (!session.cart_json || session.cart_json.length === 0) {
-      console.log(`[FSM:CART] Cart is empty`);
       await provider.sendText(from, MESSAGES.CART_EMPTY);
       return;
     }
@@ -222,7 +231,38 @@ export async function handleIncomingMessage(
     console.log(`[FSM:CART] Building summary for ${session.cart_json.length} cart line(s)...`);
     let cartLines: string[] = [];
     let total = 0;
+    let maxPrepTimeMin = 5;
     for (const line of session.cart_json) {
+      const itemRes = await db.query(`SELECT name, price_inr, prep_time_min FROM menu_items WHERE id = $1`, [line.itemId]);
+      if (itemRes.rows && itemRes.rows.length > 0) {
+        const item = itemRes.rows[0];
+        const lineTotal = item.price_inr * line.qty;
+        total += lineTotal;
+        if (item.prep_time_min > maxPrepTimeMin) maxPrepTimeMin = item.prep_time_min;
+        cartLines.push(`• ${line.qty}x ${item.name} (Rs.${lineTotal})`);
+      }
+    }
+    
+    await provider.sendInteractiveButtons(from, MESSAGES.CART_REVIEW(cartLines, total, maxPrepTimeMin), [
+      { id: 'btn_flow_checkout', title: 'Checkout' },
+      { id: 'btn_menu', title: 'Add More Items' },
+      { id: 'reset', title: 'Cancel Order' }
+    ]);
+    return;
+  }
+
+  // --- CART REVIEW -> CHECKOUT CONFIRM ---
+  if (session.state === 'cart_review' && input === 'btn_flow_checkout') {
+    await sessionService.updateSession(session.id, { state: 'checkout_confirm' });
+    session.state = 'checkout_confirm';
+    input = '__enter_checkout_confirm';
+  }
+
+  // --- CHECKOUT CONFIRM (Pre-Flow Fallback) ---
+  if (session.state === 'checkout_confirm' && input === '__enter_checkout_confirm') {
+    let cartLines: string[] = [];
+    let total = 0;
+    for (const line of session.cart_json || []) {
       const itemRes = await db.query(`SELECT name, price_inr FROM menu_items WHERE id = $1`, [line.itemId]);
       if (itemRes.rows && itemRes.rows.length > 0) {
         const item = itemRes.rows[0];
@@ -231,22 +271,17 @@ export async function handleIncomingMessage(
         cartLines.push(`• ${line.qty}x ${item.name} (Rs.${lineTotal})`);
       }
     }
-    console.log(`[FSM:CART] total=Rs.${total} — sending checkout confirm`);
 
-    await sessionService.updateSession(session.id, { state: 'checkout_confirm' });
-    // Button titles kept under 20 chars
-    await provider.sendInteractiveButtons(from, MESSAGES.CHECKOUT_CONFIRM(cartLines, total), [
-      { id: 'btn_confirm_order', title: 'Place Order' },
-      { id: 'btn_menu',         title: 'Add More Items' },
-      { id: 'reset',            title: 'Cancel Order' }
+    await provider.sendInteractiveButtons(from, MESSAGES.CHECKOUT_PROMPT(cartLines, total), [
+      { id: 'pay_counter', title: 'Pay at Counter' },
+      { id: 'pay_online', title: 'Pay Online' }
     ]);
-    console.log(`[FSM:CART] Done — state=checkout_confirm`);
     return;
   }
 
-  // --- CHECKOUT CONFIRM -> Place Order ---
-  if (session.state === 'checkout_confirm' && input === 'btn_confirm_order') {
-    console.log(`[FSM:ORDER] Placing order for customerId=${session.customer_id}...`);
+  // --- CHECKOUT CONFIRM -> PLACE ORDER ---
+  if (session.state === 'checkout_confirm' && (input === 'pay_counter' || input === 'pay_online' || input === 'btn_confirm_order')) {
+    console.log(`[FSM:ORDER] Placing order for customerId=${session.customer_id} mode=${input}...`);
     if (await settingsService.isDigitalLanePaused()) {
       await provider.sendText(from, MESSAGES.DIGITAL_LANE_PAUSED);
       return;
@@ -255,30 +290,37 @@ export async function handleIncomingMessage(
     try {
       const orderRes = await orderService.createOrder({
         customerId: session.customer_id,
-        lines: session.cart_json,
+        lines: session.cart_json || [],
         idempotencyKey: `order:${message.id}`
       });
       console.log(`[FSM:ORDER] Created orderCode=${orderRes.orderCode} total=Rs.${orderRes.pricedCart.total}`);
 
       await sessionService.updateSession(session.id, { state: 'idle', cart_json: [] });
-      const itemNames = orderRes.pricedCart.lines.map(l => `${l.qty}x ${l.itemName}`).join(', ');
+      const itemNames = orderRes.pricedCart.lines.map((l: any) => `${l.qty}x ${l.itemName}`).join(', ');
       
-      let paymentLinkUrl: string | undefined;
-      if (razorpayService.isConfigured()) {
+      let paymentMode = input === 'pay_online' ? 'razorpay' : 'cash';
+      // Legacy mapping
+      if (input === 'btn_confirm_order') paymentMode = 'cash'; 
+
+      if (paymentMode === 'razorpay' && razorpayService.isConfigured()) {
         console.log(`[FSM:ORDER] Creating Razorpay payment link...`);
         const plink = await razorpayService.createPaymentLink(
           orderRes.orderId, orderRes.orderCode, orderRes.pricedCart.total, from
         );
         await orderService.updatePaymentIntent(orderRes.orderId, plink.id, 'razorpay');
-        paymentLinkUrl = plink.short_url;
-        console.log(`[FSM:ORDER] Payment link: ${paymentLinkUrl}`);
+        await provider.sendText(from, 
+          MESSAGES.ORDER_CONFIRMED_ONLINE(orderRes.orderCode, itemNames, orderRes.pricedCart.maxPrepTimeMin, plink.short_url)
+        );
       } else {
-        console.log(`[FSM:ORDER] Razorpay not configured — skipping payment link`);
+        if (paymentMode === 'razorpay') {
+          console.log(`[FSM:ORDER] Razorpay not configured but online selected, defaulting to counter`);
+        }
+        await orderService.updatePaymentIntent(orderRes.orderId, 'pay_at_counter', 'cash');
+        await provider.sendText(from, 
+          MESSAGES.ORDER_CONFIRMED_COUNTER(orderRes.orderCode, itemNames, orderRes.pricedCart.maxPrepTimeMin, orderRes.pricedCart.total)
+        );
       }
 
-      await provider.sendText(from, 
-        MESSAGES.ORDER_CONFIRMED(orderRes.orderCode, itemNames, orderRes.pricedCart.maxPrepTimeMin, paymentLinkUrl)
-      );
       console.log(`[FSM:ORDER] Confirmation sent — state=idle`);
     } catch (err: any) {
       console.error(`[FSM:ORDER] Error:`, err.message);

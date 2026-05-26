@@ -43,23 +43,23 @@
             "children": [
               { "type": "TextHeading", "text": "Item 1" },
               { "type": "Dropdown", "name": "item_1", "label": "Select Item", "data-source": "${data.menu_items}" },
-              { "type": "Dropdown", "name": "qty_1", "label": "Quantity", "data-source": "${data.qty_options}", "visible": "${form.item_1 != ''}" },
+              { "type": "Dropdown", "name": "qty_1", "label": "Quantity", "data-source": "${data.qty_options}" },
               
-              { "type": "TextHeading", "text": "Item 2", "visible": "${form.item_1 != ''}" },
-              { "type": "Dropdown", "name": "item_2", "label": "Select Item", "data-source": "${data.menu_items}", "visible": "${form.item_1 != ''}" },
-              { "type": "Dropdown", "name": "qty_2", "label": "Quantity", "data-source": "${data.qty_options}", "visible": "${form.item_2 != ''}" },
+              { "type": "TextHeading", "text": "Item 2" },
+              { "type": "Dropdown", "name": "item_2", "label": "Select Item", "data-source": "${data.menu_items}" },
+              { "type": "Dropdown", "name": "qty_2", "label": "Quantity", "data-source": "${data.qty_options}" },
 
-              { "type": "TextHeading", "text": "Item 3", "visible": "${form.item_2 != ''}" },
-              { "type": "Dropdown", "name": "item_3", "label": "Select Item", "data-source": "${data.menu_items}", "visible": "${form.item_2 != ''}" },
-              { "type": "Dropdown", "name": "qty_3", "label": "Quantity", "data-source": "${data.qty_options}", "visible": "${form.item_3 != ''}" },
+              { "type": "TextHeading", "text": "Item 3" },
+              { "type": "Dropdown", "name": "item_3", "label": "Select Item", "data-source": "${data.menu_items}" },
+              { "type": "Dropdown", "name": "qty_3", "label": "Quantity", "data-source": "${data.qty_options}" },
 
-              { "type": "TextHeading", "text": "Item 4", "visible": "${form.item_3 != ''}" },
-              { "type": "Dropdown", "name": "item_4", "label": "Select Item", "data-source": "${data.menu_items}", "visible": "${form.item_3 != ''}" },
-              { "type": "Dropdown", "name": "qty_4", "label": "Quantity", "data-source": "${data.qty_options}", "visible": "${form.item_4 != ''}" },
+              { "type": "TextHeading", "text": "Item 4" },
+              { "type": "Dropdown", "name": "item_4", "label": "Select Item", "data-source": "${data.menu_items}" },
+              { "type": "Dropdown", "name": "qty_4", "label": "Quantity", "data-source": "${data.qty_options}" },
 
-              { "type": "TextHeading", "text": "Item 5", "visible": "${form.item_4 != ''}" },
-              { "type": "Dropdown", "name": "item_5", "label": "Select Item", "data-source": "${data.menu_items}", "visible": "${form.item_4 != ''}" },
-              { "type": "Dropdown", "name": "qty_5", "label": "Quantity", "data-source": "${data.qty_options}", "visible": "${form.item_5 != ''}" },
+              { "type": "TextHeading", "text": "Item 5" },
+              { "type": "Dropdown", "name": "item_5", "label": "Select Item", "data-source": "${data.menu_items}" },
+              { "type": "Dropdown", "name": "qty_5", "label": "Quantity", "data-source": "${data.qty_options}" },
 
               { 
                 "type": "Footer", 

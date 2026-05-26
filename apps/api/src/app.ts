@@ -5,6 +5,7 @@ import { env } from './config/env.js';
 import metaWebhookRoutes from './routes/webhook.meta.js';
 import razorpayWebhookRoutes from './routes/webhook.razorpay.js';
 import supabaseWebhookRoutes from './routes/webhook.supabase.js';
+import flowsWebhookRoutes from './routes/webhook.flows.js';
 import rateLimitPlugin from './plugins/rate-limit.plugin.js';
 
 export async function buildApp() {
@@ -48,6 +49,7 @@ export async function buildApp() {
   await app.register(metaWebhookRoutes);
   await app.register(razorpayWebhookRoutes);
   await app.register(supabaseWebhookRoutes);
+  await app.register(flowsWebhookRoutes);
   app.get('/health', async () => ({ status: 'ok', version: '1.0.0', env: env.NODE_ENV }));
 
   return app;

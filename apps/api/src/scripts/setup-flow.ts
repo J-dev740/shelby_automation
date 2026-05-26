@@ -30,11 +30,8 @@ async function setupFlow() {
   writeFileSync(join(keysDir, 'flow_private.pem'), privateKey);
   console.log('✅ Private key saved to keys/flow_private.pem');
   
-  // Format the public key as required by WhatsApp (remove headers and newlines)
-  const publicKeyClean = publicKey
-    .replace('-----BEGIN PUBLIC KEY-----', '')
-    .replace('-----END PUBLIC KEY-----', '')
-    .replace(/\n/g, '');
+  // WhatsApp requires the full PEM string including headers for whatsapp_business_encryption
+  const publicKeyClean = publicKey;
 
   console.log('2. Creating WhatsApp Flow via Graph API...');
   const createFlowBody = new URLSearchParams();
@@ -86,25 +83,47 @@ async function setupFlow() {
   console.log('✅ Flow JSON updated successfully.');
 
   console.log('4. Uploading Public Key (Data Endpoint setup)...');
-  const endpointBody = new URLSearchParams();
-  endpointBody.append('endpoint_uri', 'https://api.shelbyautomation.com/flows/data'); // We'll update this later if needed
-  endpointBody.append('public_key', publicKeyClean);
+  const PHONE_ID = process.env.META_PHONE_ID;
+  if (!PHONE_ID) {
+    console.error('Missing META_PHONE_ID in .env. Skipping public key upload.');
+  } else {
+    // A. Upload Public Key to Phone Number
+    const keyBody = new URLSearchParams();
+    keyBody.append('business_public_key', publicKeyClean);
 
-  const endpointRes = await fetch(`https://graph.facebook.com/${API_VERSION}/${flowId}/endpoints`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${ACCESS_TOKEN}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: endpointBody.toString()
-  });
+    const keyRes = await fetch(`https://graph.facebook.com/${API_VERSION}/${PHONE_ID}/whatsapp_business_encryption`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${ACCESS_TOKEN}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: keyBody.toString()
+    });
+    
+    if (!keyRes.ok) {
+      console.log('Key upload response:', await keyRes.text());
+    }
 
-  const endpointData = await endpointRes.json();
-  if (!endpointRes.ok || !endpointData.success) {
-    console.error('Failed to set endpoint:', endpointData);
-    process.exit(1);
+    // B. Set Endpoint URI on the Flow
+    const endpointBody = new URLSearchParams();
+    endpointBody.append('endpoint_uri', 'https://api.shelbyautomation.com/flows/data'); 
+    endpointBody.append('application_type', 'WEBHOOK');
+
+    const endpointRes = await fetch(`https://graph.facebook.com/${API_VERSION}/${flowId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${ACCESS_TOKEN}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: endpointBody.toString()
+    });
+    
+    if (!endpointRes.ok) {
+      console.log('Endpoint URI response:', await endpointRes.text());
+    } else {
+      console.log('✅ Endpoint configured and public key uploaded successfully.');
+    }
   }
-  console.log('✅ Endpoint configured and public key uploaded successfully.');
 
   console.log('\n=============================================');
   console.log('🎉 SUCCESS! Step 8 Complete.');

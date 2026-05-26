@@ -54,7 +54,7 @@ export default async function (fastify: FastifyInstance) {
       // 2. Handle 'ping' (Health check from WhatsApp Manager)
       if (action === 'ping') {
         responseData = {
-          version: '3.0',
+          version: decryptedBody.version || '4.0',
           data: {
             status: 'active'
           }
@@ -78,7 +78,7 @@ export default async function (fastify: FastifyInstance) {
         }));
 
         responseData = {
-          version: '3.0',
+          version: decryptedBody.version || '4.0',
           screen: 'ORDER_SCREEN',
           data: {
             menu_items,
@@ -91,7 +91,7 @@ export default async function (fastify: FastifyInstance) {
          // In Step 11, we will process the submitted items, save them to the session, and move to checkout.
          // For now, just send a success screen or data so the simulator doesn't crash.
          responseData = {
-          version: '3.0',
+          version: decryptedBody.version || '4.0',
           screen: 'SUCCESS',
           data: {
             msg: "Order received in backend! (Step 11 will process this)"

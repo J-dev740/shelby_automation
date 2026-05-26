@@ -105,8 +105,8 @@ export class MetaCloudProvider implements MessagingProvider {
     });
   }
 
-  async sendCTAButton(to: string, body: string, buttonText: string, url: string) {
-    return this.sendMessage(to, {
+  async sendCTAButton(to: string, body: string, buttonText: string, url: string): Promise<void> {
+    const payload = {
       type: 'interactive',
       interactive: {
         type: 'cta_url',
@@ -115,10 +115,43 @@ export class MetaCloudProvider implements MessagingProvider {
           name: 'cta_url',
           parameters: {
             display_text: buttonText,
-            url: url
+            url
           }
         }
       }
-    });
+    };
+    await this.sendMessage(to, payload);
+  }
+
+  async sendFlowMessage(to: string, headerText: string, bodyText: string, buttonText: string, flowToken: string): Promise<void> {
+    if (!process.env.FLOW_ID) {
+      throw new Error("FLOW_ID is not configured in environment. Cannot send flow message.");
+    }
+    
+    const payload = {
+      type: 'interactive',
+      interactive: {
+        type: 'flow',
+        header: {
+          type: 'text',
+          text: headerText
+        },
+        body: {
+          text: bodyText
+        },
+        action: {
+          name: 'flow',
+          parameters: {
+            mode: 'draft', // Change to 'published' when moving to production
+            flow_message_version: '3',
+            flow_token: flowToken,
+            flow_id: process.env.FLOW_ID,
+            flow_cta: buttonText,
+            flow_action: 'data_exchange' // Initial screen data will be fetched from /flows/data
+          }
+        }
+      }
+    };
+    await this.sendMessage(to, payload);
   }
 }

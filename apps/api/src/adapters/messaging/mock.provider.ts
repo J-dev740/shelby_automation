@@ -6,6 +6,16 @@ export class MockMessagingProvider implements MessagingProvider {
     console.log(`\n💬 [MOCK OUTBOUND to ${to}]:`, JSON.stringify(payload, null, 2), '\n');
   }
 
+  async sendLocationRequest(to: string, text: string): Promise<void> {
+    return this.sendMessage(to, {
+      type: 'interactive',
+      interactive: {
+        type: 'location_request_message',
+        body: { text }
+      }
+    });
+  }
+
   async sendText(to: string, text: string) {
     return this.sendMessage(to, { type: 'text', text: { body: text } });
   }
@@ -50,7 +60,7 @@ export class MockMessagingProvider implements MessagingProvider {
     });
   }
 
-  async sendCTAButton(to: string, body: string, buttonText: string, url: string) {
+  async sendCTAButton(to: string, body: string, buttonText: string, url: string): Promise<void> {
     return this.sendMessage(to, {
       type: 'interactive',
       interactive: {
@@ -65,5 +75,9 @@ export class MockMessagingProvider implements MessagingProvider {
         }
       }
     });
+  }
+
+  async sendFlowMessage(to: string, headerText: string, bodyText: string, buttonText: string, flowToken: string): Promise<void> {
+    console.log(`[MockProvider] Flow Message to ${to}: [Header: ${headerText}] [Body: ${bodyText}] [CTA: ${buttonText}] [Token: ${flowToken}]`);
   }
 }

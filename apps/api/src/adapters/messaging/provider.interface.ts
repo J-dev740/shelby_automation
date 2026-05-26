@@ -10,4 +10,8 @@ export interface MessagingProvider {
   sendListMessage(to: string, body: string, buttonText: string, sections: ListSection[]): Promise<void>;
   sendImage(to: string, imageUrl: string, caption?: string): Promise<void>;
   sendCTAButton(to: string, body: string, buttonText: string, url: string): Promise<void>;
+  /**
+   * Sends an interactive WhatsApp Flow message
+   */
+  sendFlowMessage(to: string, headerText: string, bodyText: string, buttonText: string, flowToken: string): Promise<void>;
 }

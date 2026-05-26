@@ -8,10 +8,15 @@ const envSchema = z.object({
   // Meta WhatsApp
   META_VERIFY_TOKEN: z.string().default('shelby_test_token'),
   META_API_TOKEN: z.string().optional(),
-  META_PHONE_ID: z.string().optional(),
-  META_APP_SECRET: z.string().optional(),
-  META_API_VERSION: z.string().default('v25.0'),
   META_APP_ID: z.string().optional(),
+  META_APP_SECRET: z.string().optional(),
+
+  // Flow Settings (Optional to allow local dev without flow setup)
+  FLOW_ID: z.string().optional(),
+  FLOW_PRIVATE_KEY: z.string().optional(),
+
+  META_PHONE_ID: z.string().optional(),
+  META_API_VERSION: z.string().default('v25.0'),
   META_BUSINESS_ACCOUNT_ID: z.string().optional(),
   META_TEST_RECIPIENT: z.string().optional(),
   MESSAGING_PROVIDER: z.enum(['meta', 'mock']).default('mock'),

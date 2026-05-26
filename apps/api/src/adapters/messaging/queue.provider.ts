@@ -25,4 +25,8 @@ export class QueueMessagingProvider implements MessagingProvider {
   async sendCTAButton(to: string, body: string, buttonText: string, url: string): Promise<void> {
     await enqueueOutboundMessage(to, 'sendCTAButton', body, buttonText, url);
   }
+
+  async sendFlowMessage(to: string, headerText: string, bodyText: string, buttonText: string, flowToken: string): Promise<void> {
+    await enqueueOutboundMessage(to, 'sendFlowMessage', headerText, bodyText, buttonText, flowToken);
+  }
 }

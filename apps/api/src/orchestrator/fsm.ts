@@ -132,7 +132,19 @@ export async function handleIncomingMessage(
 
   // --- TEMPORARY INTERCEPT FOR CATEGORIES ---
   if (session.state === 'browsing' && input.startsWith('cat_')) {
-    await provider.sendText(from, "🚧 We're upgrading our menu experience! The new interactive ordering menu will be available shortly.");
+    // Generate a secure flow token holding context
+    const flowToken = JSON.stringify({ 
+      customer_id: session.customer_id, 
+      session_id: session.id 
+    });
+    
+    await provider.sendFlowMessage(
+      from,
+      "Order Menu",
+      "Tap below to open our new interactive ordering menu!",
+      "Open Menu",
+      flowToken
+    );
     return;
   }
 

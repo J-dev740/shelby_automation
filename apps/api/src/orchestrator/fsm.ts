@@ -25,6 +25,9 @@ export async function handleIncomingMessage(
   if (message.type === 'interactive' && message.interactive.type === 'list_reply') {
     input = message.interactive.list_reply.id;
   }
+  if (message.type === 'interactive' && message.interactive.type === 'nfm_reply') {
+    input = '__nfm_reply';
+  }
   console.log(`[FSM:INPUT] input="${input}" state=${session.state}`);
 
   // --- GLOBAL COMMANDS ---
@@ -163,6 +166,41 @@ export async function handleIncomingMessage(
       ]}
     ]);
     return;
+  }
+
+  // --- FLOW SUBMISSION (nfm_reply) ---
+  if (input === '__nfm_reply') {
+    console.log(`[FSM:FLOW] Received Flow submission from ${from}`);
+    try {
+      const responseJson = JSON.parse(message.interactive.nfm_reply.response_json);
+      const formData = responseJson.form_data || {};
+      
+      const newCart: any[] = [];
+      for (let i = 1; i <= 5; i++) {
+        const itemId = formData[`item_${i}`];
+        const qtyStr = formData[`qty_${i}`];
+        if (itemId && qtyStr) {
+          // Flow JSON strings can contain numerical IDs from our DB query
+          newCart.push({ itemId: parseInt(itemId, 10), qty: parseInt(qtyStr, 10) });
+        }
+      }
+
+      if (newCart.length === 0) {
+        await provider.sendText(from, "It looks like you didn't select any items. Please open the menu again!");
+        return;
+      }
+
+      console.log(`[FSM:FLOW] Parsed ${newCart.length} items from Flow submission`);
+      // Update session and immediately fall through to cart review
+      await sessionService.updateSession(session.id, { state: 'cart_review', cart_json: newCart });
+      session.state = 'cart_review';
+      session.cart_json = newCart;
+      input = '__enter_cart_review';
+    } catch (err) {
+      console.error(`[FSM:FLOW] Error parsing nfm_reply:`, err);
+      await provider.sendText(from, "Sorry, there was an error processing your order. Please try again.");
+      return;
+    }
   }
 
   // --- CART REVIEW ---

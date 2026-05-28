@@ -117,24 +117,9 @@ export async function handleIncomingMessage(
     }
 
     const rows = catRes.rows.map(c => ({ id: `cat_${c.id}`, title: c.name.substring(0, 24) }));
-    console.log(`[FSM:WELCOME] Sending welcome text + category list to ${from}`);
+    console.log(`[FSM:WELCOME] Sending welcome text + flow message to ${from}`);
     await provider.sendText(from, MESSAGES.WELCOME);
     
-    // New utility list layout
-    await provider.sendListMessage(from, MESSAGES.CATEGORY_PROMPT, 'View Menu', [
-      { title: 'Categories', rows },
-      { title: 'Options', rows: [
-        { id: 'action_cart', title: '🛒 View My Cart' },
-        { id: 'action_status', title: '📦 Track My Order' },
-        { id: 'action_handoff', title: '👋 Talk to Staff' }
-      ]}
-    ]);
-    console.log(`[FSM:WELCOME] Done — state=browsing`);
-    return;
-  }
-
-  // --- TEMPORARY INTERCEPT FOR CATEGORIES ---
-  if (session.state === 'browsing' && input.startsWith('cat_')) {
     // Generate a secure flow token holding context
     const flowToken = JSON.stringify({ 
       customer_id: session.customer_id, 
@@ -148,6 +133,7 @@ export async function handleIncomingMessage(
       "Open Menu",
       flowToken
     );
+    console.log(`[FSM:WELCOME] Done — state=browsing`);
     return;
   }
 
@@ -155,16 +141,20 @@ export async function handleIncomingMessage(
   if ((session.state === 'checkout' || session.state === 'cart_review') && input === 'btn_menu') {
     console.log(`[FSM:ADDMORE] Returning to category browse`);
     await sessionService.updateSession(session.id, { state: 'browsing' });
-    const catRes = await db.query(`SELECT id, name FROM menu_categories WHERE active = true ORDER BY sort_order`);
-    const rows = catRes.rows.map(c => ({ id: `cat_${c.id}`, title: c.name.substring(0, 24) }));
-    await provider.sendListMessage(from, MESSAGES.CATEGORY_PROMPT, 'View Menu', [
-      { title: 'Categories', rows },
-      { title: 'Options', rows: [
-        { id: 'action_cart', title: '🛒 View My Cart' },
-        { id: 'action_status', title: '📦 Track My Order' },
-        { id: 'action_handoff', title: '👋 Talk to Staff' }
-      ]}
-    ]);
+    
+    // Generate a secure flow token holding context
+    const flowToken = JSON.stringify({ 
+      customer_id: session.customer_id, 
+      session_id: session.id 
+    });
+    
+    await provider.sendFlowMessage(
+      from,
+      "Order Menu",
+      "Tap below to open our new interactive ordering menu!",
+      "Open Menu",
+      flowToken
+    );
     return;
   }
 

@@ -92,13 +92,11 @@ export function renderHome(): HTMLElement {
     [sipsHero, bitesHero].forEach(hero => {
       if (!hero) return;
       let startY = 0;
-      let isSwiping = false;
       hero.addEventListener('touchstart', (e: any) => {
         startY = e.touches[0].clientY;
-        isSwiping = false;
       }, { passive: true });
-      hero.addEventListener('touchmove', (e: any) => {
-        isSwiping = true;
+      hero.addEventListener('touchmove', () => {
+        // Just empty listener if needed, or remove it entirely
       }, { passive: true });
       hero.addEventListener('touchend', (e: any) => {
         const deltaY = e.changedTouches[0].clientY - startY;

@@ -17,6 +17,18 @@ export function openDrawer(type: 'sips' | 'bites') {
   overlayEl = document.createElement('div');
   overlayEl.className = 'drawer-overlay';
   overlayEl.addEventListener('click', closeDrawer);
+  
+  let overlayStartY = 0;
+  overlayEl.addEventListener('touchstart', (e: any) => {
+    overlayStartY = e.touches[0].clientY;
+  }, { passive: true });
+  overlayEl.addEventListener('touchend', (e: any) => {
+    const deltaY = e.changedTouches[0].clientY - overlayStartY;
+    if (deltaY > 30) {
+      closeDrawer();
+    }
+  });
+
   document.body.appendChild(overlayEl);
 
   // Drawer

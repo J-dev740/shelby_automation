@@ -5,6 +5,7 @@ import type { MenuItem } from '../lib/store.js';
 let drawerEl: HTMLElement | null = null;
 let overlayEl: HTMLElement | null = null;
 let unsubscribe: (() => void) | null = null;
+let currentRenderedType: 'sips' | 'bites' | null = null;
 
 export function openDrawer(type: 'sips' | 'bites') {
   if (drawerEl) return; // Already open
@@ -35,7 +36,9 @@ export function openDrawer(type: 'sips' | 'bites') {
       closeDrawer();
       return;
     }
-    renderDrawerContent();
+    if (store.drawerType !== currentRenderedType) {
+      renderDrawerContent();
+    }
   });
 }
 
@@ -43,6 +46,7 @@ function renderDrawerContent() {
   if (!drawerEl || !store.menu) return;
 
   const type = store.drawerType;
+  currentRenderedType = type;
   const items: MenuItem[] = type === 'sips' ? store.menu.sips : store.menu.bites;
   const title = type === 'sips' ? 'Sips' : 'Bites';
 
@@ -137,6 +141,7 @@ export function closeDrawer() {
     overlayEl?.remove();
     drawerEl = null;
     overlayEl = null;
+    currentRenderedType = null;
     store.drawerOpen = false;
     if (unsubscribe) {
       unsubscribe();

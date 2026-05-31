@@ -238,7 +238,8 @@
 
 .confirmation-bar__slider {
   position: absolute;
-  left: 4px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -266,12 +267,21 @@
   inset: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  justify-content: space-between;
+  padding: 0 var(--space-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   pointer-events: none;
   z-index: 1;
+}
+.confirmation-bar__text span {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.home.has-cart {
+  padding-bottom: 120px;
 }
 
 .confirmation-bar__summary {

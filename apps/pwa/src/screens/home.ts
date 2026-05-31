@@ -66,6 +66,13 @@ export function renderHome(): HTMLElement {
       </div>`;
 
     el.innerHTML = html;
+    
+    // Add dynamic padding class
+    if (hasCart) {
+      el.classList.add('has-cart');
+    } else {
+      el.classList.remove('has-cart');
+    }
 
     // 4. Order confirmation bar (if cart has items) — appended to body, not inside .home
     renderConfirmationBar(hasCart);
@@ -194,7 +201,10 @@ function renderConfirmationBar(hasCart: boolean) {
     </div>
     <div class="confirmation-bar__track">
       <div class="confirmation-bar__slider" id="slider-thumb">${ICONS.chevronRight}</div>
-      <div class="confirmation-bar__text">Slide to order →</div>
+      <div class="confirmation-bar__text">
+        <span>← Empty</span>
+        <span>Order →</span>
+      </div>
     </div>
   `;
 
@@ -209,33 +219,53 @@ function bindSlideGesture(bar: HTMLElement) {
 
   let startX = 0;
   let currentX = 0;
-  let trackWidth = 0;
+  let halfTrack = 0;
 
   thumb.addEventListener('touchstart', (e) => {
     startX = e.touches[0].clientX;
-    trackWidth = track.offsetWidth - thumb.offsetWidth - 8;
+    halfTrack = (track.offsetWidth - thumb.offsetWidth) / 2 - 4;
     thumb.style.transition = 'none';
   }, { passive: true });
 
   thumb.addEventListener('touchmove', (e) => {
     const deltaX = e.touches[0].clientX - startX;
-    currentX = Math.max(0, Math.min(deltaX, trackWidth));
-    thumb.style.transform = `translateX(${currentX}px)`;
+    currentX = Math.max(-halfTrack, Math.min(deltaX, halfTrack));
+    thumb.style.transform = `translate(calc(-50% + ${currentX}px), 0)`;
+    
+    // Update icon direction based on swipe
+    if (currentX < 0 && thumb.innerHTML !== '✕') {
+      thumb.innerHTML = '✕';
+    } else if (currentX >= 0 && thumb.innerHTML !== ICONS.chevronRight) {
+      thumb.innerHTML = ICONS.chevronRight;
+    }
   }, { passive: true });
 
   thumb.addEventListener('touchend', () => {
-    const threshold = trackWidth * 0.7;
+    const threshold = halfTrack * 0.6;
     thumb.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
 
     if (currentX >= threshold) {
       // Confirmed! Navigate to checkout
-      thumb.style.transform = `translateX(${trackWidth}px)`;
+      thumb.style.transform = `translate(calc(-50% + ${halfTrack}px), 0)`;
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('navigate', { detail: 'checkout' }));
+        // Reset slider when navigating back
+        setTimeout(() => {
+          thumb.style.transform = 'translate(-50%, 0)';
+          thumb.innerHTML = ICONS.chevronRight;
+          currentX = 0;
+        }, 300);
+      }, 200);
+    } else if (currentX <= -threshold) {
+      // Empty cart!
+      thumb.style.transform = `translate(calc(-50% - ${halfTrack}px), 0)`;
+      setTimeout(() => {
+        import('../lib/store.js').then(m => m.clearCart());
       }, 200);
     } else {
       // Snap back
-      thumb.style.transform = 'translateX(0)';
+      thumb.style.transform = 'translate(-50%, 0)';
+      thumb.innerHTML = ICONS.chevronRight;
     }
     currentX = 0;
   });

@@ -27,8 +27,7 @@ export function openDrawer(type: 'sips' | 'bites') {
 
   document.body.appendChild(drawerEl);
 
-  // Handle swipe-down to close
-  bindDrawerSwipe();
+  // Handle swipe-down to close is now bound in renderDrawerContent
 
   // Subscribe to type changes
   unsubscribe = subscribe(() => {
@@ -83,24 +82,44 @@ function renderDrawerContent() {
     });
   });
 
-  // Bind add buttons
-  drawerEl.querySelectorAll('.item-card__add').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const itemId = (btn as HTMLElement).dataset.itemId!;
+  // Bind add buttons and swipe up to add
+  drawerEl.querySelectorAll('.item-card').forEach(card => {
+    const btn = card.querySelector('.item-card__add') as HTMLElement;
+    const itemId = (card as HTMLElement).dataset.itemId!;
+
+    const triggerAdd = () => {
       const allItems = [...(store.menu?.sips || []), ...(store.menu?.bites || [])];
       const item = allItems.find(i => i.id === itemId);
       if (item) {
         addToCart(item);
         // Bounce animation
-        (btn as HTMLElement).classList.remove('added');
-        void (btn as HTMLElement).offsetWidth; // Force reflow
-        (btn as HTMLElement).classList.add('added');
+        btn.classList.remove('added');
+        void btn.offsetWidth; // Force reflow
+        btn.classList.add('added');
         // Haptic feedback
         if (navigator.vibrate) navigator.vibrate(10);
       }
+    };
+
+    btn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerAdd();
+    });
+
+    let startY = 0;
+    card.addEventListener('touchstart', (e: any) => {
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    card.addEventListener('touchend', (e: any) => {
+      const deltaY = e.changedTouches[0].clientY - startY;
+      if (deltaY < -30) {
+        triggerAdd();
+      }
     });
   });
+
+  // Re-bind handle swipe
+  bindDrawerSwipe();
 }
 
 export function closeDrawer() {

@@ -34,21 +34,22 @@ export function renderHome(): HTMLElement {
 
     // 2. Cart component (above heroes)
     if (hasCart) {
-      html += `<div class="home__cart">
-        <div class="home__cart-title">Your Cart</div>`;
+      html += `<div class="home__cart-wrapper">
+        <div class="home__cart-title">Your Cart</div>
+        <div class="home__cart">`;
       for (const item of cart) {
         html += `
           <div class="home__cart-item" data-item-id="${item.itemId}">
             <span class="home__cart-item-name">${item.name}</span>
+            <span class="home__cart-item-price">₹${item.price_inr * item.qty}</span>
             <div class="qty-stepper">
               <button class="qty-stepper__btn" data-action="dec" data-id="${item.itemId}">${ICONS.minus}</button>
               <span class="qty-stepper__count">${item.qty}</span>
               <button class="qty-stepper__btn" data-action="inc" data-id="${item.itemId}">${ICONS.plus}</button>
             </div>
-            <span class="home__cart-item-price">₹${item.price_inr * item.qty}</span>
           </div>`;
       }
-      html += `</div>`;
+      html += `</div></div>`;
     }
 
     // 3. Sips & Bites heroes (always present)
@@ -75,13 +76,32 @@ export function renderHome(): HTMLElement {
 
   function bindEvents() {
     // Hero taps → open drawer
-    el.querySelector('#hero-sips')?.addEventListener('click', () => {
+    const sipsHero = el.querySelector('#hero-sips');
+    const bitesHero = el.querySelector('#hero-bites');
+
+    sipsHero?.addEventListener('click', () => {
       store.drawerType = 'sips';
       store.drawerOpen = true;
     });
-    el.querySelector('#hero-bites')?.addEventListener('click', () => {
+    bitesHero?.addEventListener('click', () => {
       store.drawerType = 'bites';
       store.drawerOpen = true;
+    });
+
+    // Swipe up on heroes to open
+    [sipsHero, bitesHero].forEach(hero => {
+      if (!hero) return;
+      let startY = 0;
+      hero.addEventListener('touchstart', (e: any) => {
+        startY = e.touches[0].clientY;
+      }, { passive: true });
+      hero.addEventListener('touchend', (e: any) => {
+        const deltaY = e.changedTouches[0].clientY - startY;
+        if (deltaY < -30) {
+          store.drawerType = hero.id === 'hero-sips' ? 'sips' : 'bites';
+          store.drawerOpen = true;
+        }
+      });
     });
 
     // Qty stepper buttons
@@ -104,6 +124,38 @@ export function renderHome(): HTMLElement {
         if (order) {
           store.sideDrawerOrder = order;
         }
+      });
+    });
+
+    // Swipe right to delete from cart
+    el.querySelectorAll('.home__cart-item').forEach(item => {
+      let startX = 0;
+      let currentX = 0;
+      const htmlItem = item as HTMLElement;
+      htmlItem.addEventListener('touchstart', (e: any) => {
+        startX = e.touches[0].clientX;
+        htmlItem.style.transition = 'none';
+      }, { passive: true });
+      htmlItem.addEventListener('touchmove', (e: any) => {
+        const deltaX = e.touches[0].clientX - startX;
+        // Only allow swiping right (deltaX > 0)
+        currentX = Math.max(0, deltaX);
+        htmlItem.style.transform = `translateX(${currentX}px)`;
+        htmlItem.style.opacity = String(1 - (currentX / 100));
+      }, { passive: true });
+      htmlItem.addEventListener('touchend', () => {
+        htmlItem.style.transition = 'transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out)';
+        if (currentX > 80) {
+          htmlItem.style.transform = `translateX(100px)`;
+          htmlItem.style.opacity = '0';
+          setTimeout(() => {
+            import('../lib/store.js').then(m => m.removeFromCart(htmlItem.dataset.itemId!));
+          }, 200);
+        } else {
+          htmlItem.style.transform = '';
+          htmlItem.style.opacity = '1';
+        }
+        currentX = 0;
       });
     });
   }

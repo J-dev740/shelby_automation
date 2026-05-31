@@ -1,9 +1,14 @@
 import './styles/base.css';
 import './styles/splash.css';
 import './styles/home.css';
+import './styles/drawer.css';
+import './styles/checkout.css';
 import { renderSplash } from './screens/splash.js';
 import { renderHome } from './screens/home.js';
-import { store } from './lib/store.js';
+import { openDrawer } from './screens/menu-drawer.js';
+import { openCheckout } from './screens/checkout.js';
+import { openSideDrawer } from './components/side-drawer.js';
+import { store, subscribe } from './lib/store.js';
 import { api } from './lib/api.js';
 import { save, load } from './lib/persist.js';
 
@@ -75,23 +80,43 @@ function startOrderPolling() {
 // Start polling if phone exists
 if (store.phone) startOrderPolling();
 
-// Listen for phone being set (after checkout)
+// 7. Listen for store changes to open/close drawers
+let prevDrawerOpen = false;
+let prevSideDrawerOrder: string | null = null;
+
+subscribe(() => {
+  // Bottom drawer
+  if (store.drawerOpen && !prevDrawerOpen) {
+    openDrawer(store.drawerType);
+  }
+  prevDrawerOpen = store.drawerOpen;
+
+  // Side drawer for order details
+  const currentOrderId = store.sideDrawerOrder?.id || null;
+  if (currentOrderId && currentOrderId !== prevSideDrawerOrder) {
+    openSideDrawer(store.sideDrawerOrder!);
+  }
+  prevSideDrawerOrder = currentOrderId;
+});
+
+// 8. Listen for phone being set (after checkout)
 window.addEventListener('phone-set', () => {
   save('phone', store.phone);
   startOrderPolling();
 });
 
-// Navigation events
+// 9. Navigation events
 window.addEventListener('navigate', ((e: CustomEvent) => {
   const target = e.detail;
-  console.log('[Shelby] Navigate to:', target);
-  // TODO: wire checkout screen in Step 12
+  if (target === 'checkout') {
+    openCheckout();
+  }
 }) as EventListener);
 
-// Load menu
+// 10. Load menu
 loadMenu();
 
-// Register service worker (Step 13)
+// 11. Register service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {
     // SW registration failed — not critical for MVP

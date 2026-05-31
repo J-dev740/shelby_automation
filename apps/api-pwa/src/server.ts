@@ -1,0 +1,29 @@
+import { env } from './config/env.js';
+import { buildApp } from './app.js';
+import { pool } from './lib/db.js';
+
+const start = async () => {
+  const app = await buildApp();
+  try {
+    await app.listen({ port: parseInt(env.PORT), host: '0.0.0.0' });
+    app.log.info(`🚀 Shelby PWA API listening on port ${env.PORT} [${env.NODE_ENV}]`);
+
+    // Graceful shutdown
+    const shutdown = async (signal: string) => {
+      app.log.info(`Received ${signal}. Shutting down gracefully...`);
+      await app.close();
+      await pool.end();
+      process.exit(0);
+    };
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('unhandledRejection', (reason) => {
+      app.log.error({ reason }, 'Unhandled rejection');
+    });
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
+};
+
+start();

@@ -155,37 +155,53 @@ export function closeDrawer() {
 function bindDrawerSwipe() {
   if (!drawerEl) return;
 
-  const handle = drawerEl.querySelector('.drawer__handle') as HTMLElement;
-  if (!handle) return;
-
   let startY = 0;
+  let startX = 0;
   let currentY = 0;
   let dragging = false;
+  let isHorizontalScroll = false;
 
-  handle.addEventListener('touchstart', (e) => {
+  drawerEl.addEventListener('touchstart', (e: any) => {
     startY = e.touches[0].clientY;
-    dragging = true;
+    startX = e.touches[0].clientX;
+    dragging = false;
+    isHorizontalScroll = false;
     drawerEl!.style.transition = 'none';
   }, { passive: true });
 
-  handle.addEventListener('touchmove', (e) => {
-    if (!dragging) return;
+  drawerEl.addEventListener('touchmove', (e: any) => {
     const deltaY = e.touches[0].clientY - startY;
-    currentY = Math.max(0, deltaY);
-    drawerEl!.style.transform = `translateY(${currentY}px)`;
+    const deltaX = e.touches[0].clientX - startX;
+
+    if (!dragging && !isHorizontalScroll) {
+      if (Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        isHorizontalScroll = true;
+      } else if (deltaY > 10 && Math.abs(deltaY) > Math.abs(deltaX)) {
+        dragging = true;
+      }
+    }
+
+    if (dragging) {
+      currentY = Math.max(0, deltaY);
+      drawerEl!.style.transform = `translateY(${currentY}px)`;
+    }
   }, { passive: true });
 
-  handle.addEventListener('touchend', () => {
-    dragging = false;
+  drawerEl.addEventListener('touchend', () => {
     drawerEl!.style.transition = '';
 
-    // If dragged > 30% of drawer height, close
-    const threshold = drawerEl!.offsetHeight * 0.3;
-    if (currentY > threshold) {
-      closeDrawer();
-    } else {
-      drawerEl!.style.transform = '';
+    if (dragging) {
+      // If dragged > 30% of drawer height, close
+      const threshold = drawerEl!.offsetHeight * 0.3;
+      if (currentY > threshold) {
+        closeDrawer();
+      } else {
+        drawerEl!.style.transform = '';
+      }
     }
+    
+    dragging = false;
+    isHorizontalScroll = false;
     currentY = 0;
   });
 }

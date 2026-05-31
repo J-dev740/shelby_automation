@@ -107,12 +107,16 @@ function renderDrawerContent() {
     });
 
     let startY = 0;
+    let startX = 0;
     card.addEventListener('touchstart', (e: any) => {
       startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
     }, { passive: true });
     card.addEventListener('touchend', (e: any) => {
       const deltaY = e.changedTouches[0].clientY - startY;
-      if (deltaY < -30) {
+      const deltaX = e.changedTouches[0].clientX - startX;
+      // Must be a deliberate vertical swipe up, not a horizontal scroll
+      if (deltaY < -40 && Math.abs(deltaY) > Math.abs(deltaX)) {
         triggerAdd();
       }
     });

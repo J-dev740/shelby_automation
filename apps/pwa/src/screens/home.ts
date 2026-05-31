@@ -92,12 +92,18 @@ export function renderHome(): HTMLElement {
     [sipsHero, bitesHero].forEach(hero => {
       if (!hero) return;
       let startY = 0;
+      let isSwiping = false;
       hero.addEventListener('touchstart', (e: any) => {
         startY = e.touches[0].clientY;
+        isSwiping = false;
+      }, { passive: true });
+      hero.addEventListener('touchmove', (e: any) => {
+        isSwiping = true;
       }, { passive: true });
       hero.addEventListener('touchend', (e: any) => {
         const deltaY = e.changedTouches[0].clientY - startY;
         if (deltaY < -30) {
+          if (e.cancelable) e.preventDefault(); // Prevent ghost clicks on the newly opened drawer
           store.drawerType = hero.id === 'hero-sips' ? 'sips' : 'bites';
           store.drawerOpen = true;
         }

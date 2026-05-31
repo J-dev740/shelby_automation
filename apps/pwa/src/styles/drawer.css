@@ -103,9 +103,7 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
-  flex-wrap: wrap;
-  max-height: calc(75vh - 120px);
-  overflow-y: auto;
+  flex-wrap: nowrap;
 }
 .drawer__items::-webkit-scrollbar { display: none; }
 

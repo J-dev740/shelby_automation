@@ -55,7 +55,21 @@ export async function menuRoutes(app: FastifyInstance) {
           category_name: row.category_name,
         };
 
-        const pwaType = PWA_TYPE_MAP[row.category_slug] || 'bites';
+        const slug = row.category_slug?.toLowerCase() || '';
+        const name = row.category_name?.toLowerCase() || '';
+        
+        // Determine type based on explicit map, or fallback to fuzzy matching
+        let pwaType = PWA_TYPE_MAP[slug];
+        if (!pwaType) {
+          if (slug.includes('food') || slug.includes('add-on') || slug.includes('extra') || slug.includes('bite') || 
+              name.includes('food') || name.includes('add-on') || name.includes('bite')) {
+            pwaType = 'bites';
+          } else {
+            // Default to sips (drinks) for cafes since they have many drink categories
+            pwaType = 'sips';
+          }
+        }
+
         if (pwaType === 'sips') {
           sips.push(item);
         } else {

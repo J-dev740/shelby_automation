@@ -52,6 +52,7 @@ const initialState: AppState = {
 
 export const store: AppState = new Proxy({ ...initialState }, {
   set(target, prop, value) {
+    if ((target as any)[prop] === value) return true;
     (target as any)[prop] = value;
     notify();
     return true;

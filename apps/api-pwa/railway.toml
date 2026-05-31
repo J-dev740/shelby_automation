@@ -1,0 +1,9 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pnpm --filter api-pwa build"
+
+[deploy]
+startCommand = "cd apps/api-pwa && pnpm start"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"

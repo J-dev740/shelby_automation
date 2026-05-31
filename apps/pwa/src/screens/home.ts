@@ -119,6 +119,7 @@ export function renderHome(): HTMLElement {
     el.querySelectorAll('.qty-stepper__btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (navigator.vibrate) navigator.vibrate(10);
         const target = e.currentTarget as HTMLElement;
         const id = target.dataset.id!;
         const action = target.dataset.action!;
@@ -159,6 +160,7 @@ export function renderHome(): HTMLElement {
         if (currentX > 80) {
           htmlItem.style.transform = `translateX(100px)`;
           htmlItem.style.opacity = '0';
+          if (navigator.vibrate) navigator.vibrate(20);
           setTimeout(() => {
             import('../lib/store.js').then(m => m.removeFromCart(htmlItem.dataset.itemId!));
           }, 200);
@@ -247,6 +249,7 @@ function bindSlideGesture(bar: HTMLElement) {
     if (currentX >= threshold) {
       // Confirmed! Navigate to checkout
       thumb.style.transform = `translate(calc(-50% + ${halfTrack}px), 0)`;
+      if (navigator.vibrate) navigator.vibrate(20);
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('navigate', { detail: 'checkout' }));
         // Reset slider when navigating back
@@ -259,6 +262,7 @@ function bindSlideGesture(bar: HTMLElement) {
     } else if (currentX <= -threshold) {
       // Empty cart!
       thumb.style.transform = `translate(calc(-50% - ${halfTrack}px), 0)`;
+      if (navigator.vibrate) navigator.vibrate(20);
       setTimeout(() => {
         import('../lib/store.js').then(m => m.clearCart());
       }, 200);

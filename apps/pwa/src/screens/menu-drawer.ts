@@ -91,6 +91,7 @@ function renderDrawerContent() {
   // Bind toggle buttons
   drawerEl.querySelectorAll('.drawer__toggle-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(10);
       const newType = (btn as HTMLElement).dataset.type as 'sips' | 'bites';
       if (newType !== store.drawerType) {
         store.drawerType = newType;

@@ -1,0 +1,278 @@
+.home {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--safe-top) var(--space-md) 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.home::-webkit-scrollbar { display: none; }
+
+/* Active order cards section */
+.home__orders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.order-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.order-card__left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.order-card__code {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.order-card__items {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.order-card__status {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+.order-card__status--new { background: #FEF3C7; color: #92400E; }
+.order-card__status--accepted { background: #DBEAFE; color: #1E40AF; }
+.order-card__status--preparing { background: #FDE68A; color: #92400E; }
+.order-card__status--ready { background: #D1FAE5; color: #065F46; }
+
+.order-card__chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* Cart section on home */
+.home__cart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.home__cart-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.home__cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.home__cart-item:last-of-type {
+  border-bottom: none;
+}
+
+.home__cart-item-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.home__cart-item-price {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent-dark);
+  margin-left: var(--space-md);
+}
+
+/* Qty stepper */
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-left: var(--space-sm);
+}
+
+.qty-stepper__btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.qty-stepper__btn:active {
+  background: var(--color-bg-secondary);
+  transform: scale(0.9);
+}
+.qty-stepper__btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.qty-stepper__count {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  min-width: 20px;
+  text-align: center;
+  color: var(--color-text-primary);
+}
+
+/* Sips & Bites hero components */
+.home__heroes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  flex: 1;
+  min-height: 0;
+  align-content: center;
+  padding-bottom: var(--space-lg);
+}
+
+.hero-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl) var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  aspect-ratio: 1;
+  transition: transform var(--duration-fast) var(--ease-spring),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+.hero-card:active {
+  transform: scale(0.96);
+  box-shadow: var(--shadow-sm);
+}
+
+.hero-card__icon {
+  width: 64px;
+  height: 64px;
+  color: var(--color-accent);
+}
+.hero-card__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hero-card__label {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+/* Order confirmation bar */
+.confirmation-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-bar);
+  padding: var(--space-md) var(--space-md) calc(var(--space-md) + var(--safe-bottom));
+  background: var(--color-surface);
+  box-shadow: var(--shadow-bar);
+  border-top: 1px solid var(--color-border);
+  animation: slideUp var(--duration-normal) var(--ease-spring) forwards;
+}
+
+.confirmation-bar__track {
+  position: relative;
+  height: 52px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.confirmation-bar__slider {
+  position: absolute;
+  left: 4px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  touch-action: none;
+  cursor: grab;
+  z-index: 2;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.confirmation-bar__slider:active {
+  cursor: grabbing;
+  background: var(--color-accent-hover);
+}
+.confirmation-bar__slider svg {
+  width: 20px;
+  height: 20px;
+}
+
+.confirmation-bar__text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.confirmation-bar__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+  padding: 0 var(--space-xs);
+}
+
+.confirmation-bar__count {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.confirmation-bar__total {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent-dark);
+}

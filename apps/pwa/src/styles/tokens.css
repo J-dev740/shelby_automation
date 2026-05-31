@@ -1,0 +1,78 @@
+:root {
+  /* Earthy warm palette */
+  --color-bg-primary: #FAF3EB;
+  --color-bg-secondary: #F5E6D3;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFBF5;
+  --color-accent: #C7835A;
+  --color-accent-hover: #B5724C;
+  --color-accent-dark: #8B5E3C;
+  --color-text-primary: #2D1B0E;
+  --color-text-secondary: #6B5744;
+  --color-text-muted: #A89485;
+  --color-success: #7CAA6E;
+  --color-warning: #E8A244;
+  --color-danger: #C25B4E;
+  --color-border: #E8DDD0;
+  --color-overlay: rgba(45, 27, 14, 0.4);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(45, 27, 14, 0.06);
+  --shadow-md: 0 4px 12px rgba(45, 27, 14, 0.08);
+  --shadow-lg: 0 8px 24px rgba(45, 27, 14, 0.1);
+  --shadow-drawer: 0 -8px 30px rgba(45, 27, 14, 0.12);
+  --shadow-bar: 0 -2px 16px rgba(45, 27, 14, 0.1);
+
+  /* Typography */
+  --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-size-xs: 0.6875rem;   /* 11px */
+  --font-size-sm: 0.8125rem;   /* 13px */
+  --font-size-md: 0.9375rem;   /* 15px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.5rem;      /* 24px */
+  --font-size-2xl: 2rem;       /* 32px */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Safe areas */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* Animation */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+
+  /* Z-index layers */
+  --z-base: 0;
+  --z-cart: 10;
+  --z-bar: 20;
+  --z-drawer: 100;
+  --z-side-drawer: 110;
+  --z-modal: 200;
+  --z-toast: 300;
+}

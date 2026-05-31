@@ -61,8 +61,8 @@ export async function menuRoutes(app: FastifyInstance) {
         // Determine type based on explicit map, or fallback to fuzzy matching
         let pwaType = PWA_TYPE_MAP[slug];
         if (!pwaType) {
-          if (slug.includes('food') || slug.includes('add-on') || slug.includes('extra') || slug.includes('bite') || 
-              name.includes('food') || name.includes('add-on') || name.includes('bite')) {
+          if (slug.includes('food') || slug.includes('add-on') || slug.includes('extra') || slug.includes('bite') || slug.includes('special') || slug.includes('snack') || slug.includes('bakery') ||
+              name.includes('food') || name.includes('add-on') || name.includes('bite') || name.includes('special') || name.includes('snack') || name.includes('bakery') || name.includes('dessert')) {
             pwaType = 'bites';
           } else {
             // Default to sips (drinks) for cafes since they have many drink categories

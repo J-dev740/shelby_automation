@@ -186,15 +186,37 @@ export default function Dashboard() {
 
       const ordersSub = supabase
         .channel('custom-orders-channel')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-          fetchData();
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
+          const updatedOrder = payload.new as Partial<Order>;
+          setOrders(prev => prev.map(o => o.id === updatedOrder.id ? { ...o, ...updatedOrder } : o));
+          setSelectedOrder(prev => (prev && prev.id === updatedOrder.id) ? { ...prev, ...updatedOrder } as Order : prev);
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => fetchData())
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'orders' }, (payload) => {
+          setOrders(prev => prev.filter(o => o.id !== payload.old.id));
         })
         .subscribe();
 
       const sessionsSub = supabase
         .channel('custom-sessions-channel')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'sessions' }, () => {
-          fetchData();
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sessions' }, (payload) => {
+          const updatedSession = payload.new as Partial<Session>;
+          if (updatedSession.state === 'handoff_active') {
+            setHandoffSessions(prev => {
+              if (prev.find(s => s.id === updatedSession.id)) {
+                return prev.map(s => s.id === updatedSession.id ? { ...s, ...updatedSession } as Session : s);
+              } else {
+                fetchData(); 
+                return prev;
+              }
+            });
+          } else {
+            setHandoffSessions(prev => prev.filter(s => s.id !== updatedSession.id));
+          }
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sessions' }, () => fetchData())
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'sessions' }, (payload) => {
+          setHandoffSessions(prev => prev.filter(s => s.id !== payload.old.id));
         })
         .subscribe();
 

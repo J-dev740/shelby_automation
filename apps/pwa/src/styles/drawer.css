@@ -119,9 +119,9 @@
   grid-template-rows: 1fr 1fr;
   grid-auto-flow: column;
   gap: var(--space-md);
-  padding: 0 var(--space-md) var(--space-md);
+  padding: 0 var(--space-md) calc(var(--space-md) + 14px);  /* extra bottom for button overflow + pill gap */
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: clip;   /* clip instead of hidden — allows children to overflow y without creating scroll container */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
@@ -143,7 +143,7 @@
   scroll-snap-align: start;
   transition: transform var(--duration-fast) var(--ease-spring),
               border-color var(--duration-fast) var(--ease-out);
-  overflow: hidden;
+  overflow: visible;  /* allow add button to overflow bottom edge */
 }
 .item-card:active {
   transform: scale(0.96);
@@ -180,7 +180,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-xs);
-  padding: var(--space-sm) var(--space-sm) var(--space-md);
+  padding: var(--space-sm) var(--space-sm) 0;  /* no bottom padding — button will overflow */
   flex: 1;
 }
 
@@ -205,6 +205,7 @@
   width: 32px;
   height: 32px;
   margin-top: var(--space-xs);
+  margin-bottom: -10px;  /* ~30% of 32px overflows the card bottom border */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -218,6 +219,8 @@
   transition: background var(--duration-fast) var(--ease-out),
               transform var(--duration-fast) var(--ease-spring);
   isolation: isolate;
+  position: relative;
+  z-index: 2;  /* sit above the card border */
 }
 .item-card__add svg {
   width: 14px;
@@ -375,3 +378,135 @@
   flex-shrink: 0;
 }
 
+
+/* ══════════════════════════════════════════════════════
+   Subcategory Filter Pill
+   ══════════════════════════════════════════════════════ */
+
+/* Sticky bar anchored to drawer bottom */
+.drawer__filter-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md) var(--space-md);
+  /* Fade gradient so it visually lifts from the scroll content */
+  background: linear-gradient(to top, var(--color-surface) 55%, transparent 100%);
+  pointer-events: none;  /* let scroll-through by default */
+  transition: all var(--duration-normal) var(--ease-out);
+  z-index: 10;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Compressed pill — the default trigger button */
+.drawer__filter-pill {
+  pointer-events: all;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 18px;
+  background: var(--color-surface);
+  border: var(--bento-border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-handwritten);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-spring);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(45, 27, 14, 0.10);
+}
+.drawer__filter-pill:active {
+  transform: scale(0.95);
+}
+/* Active filter — burgundy highlight on compressed pill */
+.drawer__filter-pill.has-filter {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.drawer__filter-pill__chevron {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+.drawer__filter-pill__chevron svg {
+  width: 14px;
+  height: 14px;
+}
+/* Rotate chevron when expanded */
+.drawer__filter-bar.expanded .drawer__filter-pill__chevron {
+  transform: rotate(180deg);
+}
+
+/* Chips row — hidden when collapsed */
+.drawer__filter-chips {
+  pointer-events: all;
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  width: 100%;
+  /* Collapsed: zero-height hidden */
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height var(--duration-normal) var(--ease-out),
+              opacity var(--duration-fast) var(--ease-out);
+}
+.drawer__filter-chips::-webkit-scrollbar { display: none; }
+
+/* Expanded state — chips snap open */
+.drawer__filter-bar.expanded .drawer__filter-chips {
+  max-height: 44px;
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Individual subcategory chip */
+.drawer__filter-chip {
+  flex-shrink: 0;
+  padding: 5px 16px;
+  border: var(--bento-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-handwritten);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-spring);
+}
+.drawer__filter-chip:active {
+  transform: scale(0.93);
+}
+/* Selected chip */
+.drawer__filter-chip.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}

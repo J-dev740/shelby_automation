@@ -329,13 +329,17 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  /* Entrance animation */
+  /* Entrance animation — locked by .hero-entered after first play */
   animation: heroEntrance 600ms var(--ease-spring) both;
   transition: transform var(--duration-fast) var(--ease-spring),
               border-color var(--duration-fast) var(--ease-out);
 }
 .hero-card:nth-child(2) {
   animation-delay: 80ms;
+}
+/* Once the entrance animation completes, suppress it permanently */
+.hero-card.hero-entered {
+  animation: none;
 }
 .hero-card:active,
 .hero-card.pressing {

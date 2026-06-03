@@ -72,12 +72,15 @@ let drawerEl: HTMLElement | null = null;
 let overlayEl: HTMLElement | null = null;
 let unsubscribe: (() => void) | null = null;
 let currentRenderedType: 'sips' | 'bites' | null = null;
+// Subcategory filter state — resets when drawer type changes
+let activeSubCategory: string | null = null;
 
 export function openDrawer(type: 'sips' | 'bites') {
   if (drawerEl) return; // Already open
 
   store.drawerType = type;
   store.drawerOpen = true;
+  activeSubCategory = null; // reset filter on fresh open
 
   // Overlay
   overlayEl = document.createElement('div');
@@ -106,8 +109,6 @@ export function openDrawer(type: 'sips' | 'bites') {
 
   document.body.appendChild(drawerEl);
 
-  // Handle swipe-down to close is now bound in renderDrawerContent
-
   // Subscribe to type changes
   unsubscribe = subscribe(() => {
     if (!store.drawerOpen) {
@@ -115,9 +116,16 @@ export function openDrawer(type: 'sips' | 'bites') {
       return;
     }
     if (store.drawerType !== currentRenderedType) {
+      activeSubCategory = null; // reset filter on category switch
       renderDrawerContent();
     }
   });
+}
+
+function getSubCategories(items: MenuItem[]): string[] {
+  const cats = new Set<string>();
+  items.forEach(i => { if (i.category_name) cats.add(i.category_name); });
+  return Array.from(cats);
 }
 
 function renderDrawerContent() {
@@ -125,8 +133,17 @@ function renderDrawerContent() {
 
   const type = store.drawerType;
   currentRenderedType = type;
-  const items: MenuItem[] = type === 'sips' ? store.menu.sips : store.menu.bites;
+  const allItems: MenuItem[] = type === 'sips' ? store.menu.sips : store.menu.bites;
+  const subCategories = getSubCategories(allItems);
+  const hasFilter = subCategories.length > 1;
+
+  // Filter items by active subcategory
+  const items = activeSubCategory
+    ? allItems.filter(i => i.category_name === activeSubCategory)
+    : allItems;
+
   const title = type === 'sips' ? 'Sips' : 'Bites';
+  const pillLabel = activeSubCategory || 'All';
 
   drawerEl.innerHTML = `
     <div class="drawer__handle"><div class="drawer__handle-bar"></div></div>
@@ -141,7 +158,7 @@ function renderDrawerContent() {
         </button>
       </div>
     </div>
-    <div class="drawer__items">
+    <div class="drawer__items" id="drawer-items">
       ${items.map(item => `
         <div class="item-card" data-item-id="${item.id}">
           <div class="item-card__icon">
@@ -154,8 +171,21 @@ function renderDrawerContent() {
           </div>
         </div>
       `).join('')}
-      ${items.length === 0 ? '<p style="padding: 2rem; color: var(--color-text-muted); text-align: center;">Menu is being updated &#x2615;</p>' : ''}
+      ${items.length === 0 ? '<p style="padding: 2rem; color: var(--color-text-muted); text-align: center;">No items in this category &#x2615;</p>' : ''}
     </div>
+    ${hasFilter ? `
+    <div class="drawer__filter-bar" id="drawer-filter-bar">
+      <button class="drawer__filter-pill ${activeSubCategory ? 'has-filter' : ''}" id="drawer-filter-pill" aria-expanded="false">
+        <span class="drawer__filter-pill__label">${pillLabel}</span>
+        <span class="drawer__filter-pill__chevron">${ICONS.chevronDown}</span>
+      </button>
+      <div class="drawer__filter-chips" id="drawer-filter-chips" aria-hidden="true">
+        <button class="drawer__filter-chip ${!activeSubCategory ? 'active' : ''}" data-cat="">All</button>
+        ${subCategories.map(cat => `
+          <button class="drawer__filter-chip ${activeSubCategory === cat ? 'active' : ''}" data-cat="${cat}">${cat}</button>
+        `).join('')}
+      </div>
+    </div>` : ''}
   `;
 
 
@@ -165,7 +195,6 @@ function renderDrawerContent() {
       if (navigator.vibrate) navigator.vibrate(10);
       const newType = (btn as HTMLElement).dataset.type as 'sips' | 'bites';
       if (newType !== store.drawerType) {
-        // Fade the title text out then back in
         const titleEl = drawerEl?.querySelector('.drawer__title') as HTMLElement | null;
         if (titleEl) {
           titleEl.style.transition = 'opacity 150ms ease';
@@ -177,14 +206,48 @@ function renderDrawerContent() {
     });
   });
 
+  // Subcategory pill — toggle expand/collapse
+  const pill = drawerEl.querySelector('#drawer-filter-pill') as HTMLButtonElement | null;
+  const chips = drawerEl.querySelector('#drawer-filter-chips') as HTMLElement | null;
+  const filterBar = drawerEl.querySelector('#drawer-filter-bar') as HTMLElement | null;
+
+  if (pill && chips && filterBar) {
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const expanded = filterBar.classList.toggle('expanded');
+      pill.setAttribute('aria-expanded', String(expanded));
+      chips.setAttribute('aria-hidden', String(!expanded));
+    });
+
+    chips.querySelectorAll('.drawer__filter-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cat = (chip as HTMLElement).dataset.cat || null;
+        activeSubCategory = cat || null;
+        filterBar.classList.remove('expanded');
+        // Re-render with new filter
+        renderDrawerContent();
+      });
+    });
+
+    // Collapse pill when tapping outside filter bar
+    drawerEl.addEventListener('click', (e) => {
+      if (!filterBar.contains(e.target as Node)) {
+        filterBar.classList.remove('expanded');
+        pill.setAttribute('aria-expanded', 'false');
+        chips.setAttribute('aria-hidden', 'true');
+      }
+    }, { capture: false });
+  }
+
   // Bind add buttons and swipe up to add
   drawerEl.querySelectorAll('.item-card').forEach(card => {
     const btn = card.querySelector('.item-card__add') as HTMLElement;
     const itemId = (card as HTMLElement).dataset.itemId!;
 
     const triggerAdd = () => {
-      const allItems = [...(store.menu?.sips || []), ...(store.menu?.bites || [])];
-      const item = allItems.find(i => i.id === itemId);
+      const allMenuItems = [...(store.menu?.sips || []), ...(store.menu?.bites || [])];
+      const item = allMenuItems.find(i => i.id === itemId);
       if (item) {
         addToCart(item);
 
@@ -192,7 +255,6 @@ function renderDrawerContent() {
         btn.classList.remove('added');
         void btn.offsetWidth; // Force reflow
         btn.classList.add('added');
-        // Swap to checkmark while added class is active
         const originalHTML = btn.innerHTML;
         btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
         setTimeout(() => {
@@ -221,7 +283,6 @@ function renderDrawerContent() {
     card.addEventListener('touchend', (e: any) => {
       const deltaY = e.changedTouches[0].clientY - startY;
       const deltaX = e.changedTouches[0].clientX - startX;
-      // Must be a deliberate vertical swipe up, not a horizontal scroll
       if (deltaY < -40 && Math.abs(deltaY) > Math.abs(deltaX)) {
         triggerAdd();
       }

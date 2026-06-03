@@ -24,6 +24,13 @@ export function renderHome(): HTMLElement {
       <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
     </div>`;
 
+  // After entrance animation plays once, lock it so re-appending never replays it
+  heroesEl.querySelectorAll('.hero-card').forEach(card => {
+    card.addEventListener('animationend', () => {
+      (card as HTMLElement).classList.add('hero-entered');
+    }, { once: true });
+  });
+
   // Bind hero interactions once (heroes are never re-created)
   bindHeroEvents(heroesEl, el);
 

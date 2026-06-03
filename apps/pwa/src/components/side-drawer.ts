@@ -32,17 +32,19 @@ export function openSideDrawer(order: ActiveOrder) {
   const timeAgo = getTimeAgo(orderTime);
 
   sideDrawerEl.innerHTML = `
-    <div class="side-drawer__code">#${order.order_code}</div>
-    <div class="side-drawer__time">${timeAgo}</div>
-    <div class="side-drawer__status" style="color: ${status.color}; background: ${status.bg};">
-      ${status.label}
+    <div class="side-drawer__header-cell">
+      <div class="side-drawer__code">#${order.order_code}</div>
+      <div class="side-drawer__time">${timeAgo}</div>
     </div>
-    ${order.promised_eta_min ? `
-      <div style="display: flex; align-items: center; gap: 6px; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: var(--space-lg);">
-        <span style="width: 16px; height: 16px;">${ICONS.clock}</span>
-        ~${order.promised_eta_min} min
-      </div>
-    ` : ''}
+    <div class="side-drawer__status-cell">
+      <span class="side-drawer__status" style="color: ${status.color}; background: ${status.bg}; border-color: ${status.color}33;">
+        ${status.label}
+      </span>
+      ${order.promised_eta_min ? `
+        <span style="font-size: var(--font-size-xs); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px;">
+          <span style="width:14px;height:14px;display:inline-flex;">${ICONS.clock}</span>~${order.promised_eta_min} min
+        </span>` : ''}
+    </div>
     <div class="side-drawer__items">
       ${order.items.map((item: any) => `
         <div class="side-drawer__item">
@@ -52,7 +54,7 @@ export function openSideDrawer(order: ActiveOrder) {
     </div>
     <div class="side-drawer__total">
       <span>Total</span>
-      <span>₹${order.total_inr}</span>
+      <span>&#x20B9;${order.total_inr}</span>
     </div>
   `;
 

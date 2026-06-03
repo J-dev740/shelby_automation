@@ -147,9 +147,11 @@ function renderDrawerContent() {
           <div class="item-card__icon">
             <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#${iconForItem(item.name)}"></use></svg>
           </div>
-          <span class="item-card__name">${item.name}</span>
-          <span class="item-card__price">&#x20B9;${item.price_inr}</span>
-          <button class="item-card__add" data-item-id="${item.id}" aria-label="Add ${item.name}">${ICONS.plus}</button>
+          <div class="item-card__body">
+            <span class="item-card__name">${item.name}</span>
+            <span class="item-card__price">&#x20B9;${item.price_inr}</span>
+            <button class="item-card__add" data-item-id="${item.id}" aria-label="Add ${item.name}">${ICONS.plus}</button>
+          </div>
         </div>
       `).join('')}
       ${items.length === 0 ? '<p style="padding: 2rem; color: var(--color-text-muted); text-align: center;">Menu is being updated &#x2615;</p>' : ''}

@@ -57,8 +57,10 @@ export function renderHome(): HTMLElement {
               <span class="order-card__code">#${order.order_code}</span>
               <span class="order-card__items">${itemSummary}</span>
             </div>
-            <span class="order-card__status ${statusClass}">${order.state}</span>
-            <span class="order-card__chevron">${ICONS.chevronRight}</span>
+            <div class="order-card__status-cell">
+              <span class="order-card__status ${statusClass}">${order.state}</span>
+              <span class="order-card__chevron">${ICONS.chevronRight}</span>
+            </div>
           </div>`;
       }
       html += `</div>`;
@@ -77,11 +79,13 @@ export function renderHome(): HTMLElement {
               Remove
             </div>
             <span class="home__cart-item-name">${item.name}</span>
-            <span class="home__cart-item-price">&#x20B9;${item.price_inr * item.qty}</span>
-            <div class="qty-stepper">
-              <button class="qty-stepper__btn" data-action="dec" data-id="${item.itemId}">${ICONS.minus}</button>
-              <span class="qty-stepper__count">${item.qty}</span>
-              <button class="qty-stepper__btn" data-action="inc" data-id="${item.itemId}">${ICONS.plus}</button>
+            <div class="home__cart-item__right">
+              <span class="home__cart-item-price">&#x20B9;${item.price_inr * item.qty}</span>
+              <div class="qty-stepper">
+                <button class="qty-stepper__btn" data-action="dec" data-id="${item.itemId}">${ICONS.minus}</button>
+                <span class="qty-stepper__count">${item.qty}</span>
+                <button class="qty-stepper__btn" data-action="inc" data-id="${item.itemId}">${ICONS.plus}</button>
+              </div>
             </div>
           </div>`;
       }

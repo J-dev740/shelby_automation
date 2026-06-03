@@ -21,17 +21,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-md);
+  padding: 0;
   background: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
+  border-radius: var(--bento-radius);
+  border: var(--bento-border);
+  box-shadow: none;
+  overflow: hidden;
 }
 
+/* Bento left cell: order code + items */
 .order-card__left {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  padding: var(--space-md) var(--space-md);
+  flex: 1;
+  border-right: var(--bento-border-inner);
+  min-height: 52px;
+  justify-content: center;
 }
 
 .order-card__code {
@@ -45,20 +52,32 @@
   color: var(--color-text-muted);
 }
 
+/* Bento right cell: status badge + chevron */
+.order-card__status-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  flex-shrink: 0;
+}
+
 .order-card__status {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  border-radius: var(--bento-radius-sm);
+  border: 1px solid transparent;
 }
-.order-card__status--new { background: #FEF3C7; color: #92400E; }
-.order-card__status--accepted { background: #DBEAFE; color: #1E40AF; }
-.order-card__status--preparing { background: #FDE68A; color: #92400E; }
-.order-card__status--ready { background: #D1FAE5; color: #065F46; }
+.order-card__status--new      { background: #FEF3C7; color: #92400E; border-color: #FDE68A; }
+.order-card__status--accepted  { background: #DBEAFE; color: #1E40AF; border-color: #BFDBFE; }
+.order-card__status--preparing { background: #FDE68A; color: #92400E; border-color: #FCD34D; }
+.order-card__status--ready     { background: #D1FAE5; color: #065F46; border-color: #A7F3D0; }
 
 .order-card__chevron {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
@@ -101,13 +120,11 @@
 .home__cart-item {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-sm) var(--space-md);
+  align-items: stretch;
   background: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
+  border-radius: var(--bento-radius);
+  border: var(--bento-border);
+  box-shadow: none;
   flex-shrink: 0;
   transition: transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out);
   position: relative;
@@ -163,12 +180,29 @@
   font-weight: 600;
   color: var(--color-text-primary);
   flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  align-items: center;
+  min-height: 52px;
 }
 
 .home__cart-item-price {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-accent-dark);
+  padding: 0 var(--space-sm) 0 0;
+}
+
+/* Bento right cell: price + qty stepper separated by inner border */
+.home__cart-item__right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-left: var(--bento-border-inner);
+  padding: var(--space-sm) var(--space-md);
+  gap: var(--space-xs);
+  flex-shrink: 0;
 }
 
 /* Qty stepper */
@@ -241,11 +275,11 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-md);
-  padding: var(--space-xl) var(--space-md);
+  padding: var(--space-xl) var(--space-md) calc(var(--space-xl) + 12px);
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--color-border);
+  border-radius: var(--bento-radius);
+  border: var(--bento-border);
+  box-shadow: none;
   aspect-ratio: 1;
   cursor: pointer;
   position: relative;
@@ -253,7 +287,7 @@
   /* Entrance animation */
   animation: heroEntrance 600ms var(--ease-spring) both;
   transition: transform var(--duration-fast) var(--ease-spring),
-              box-shadow var(--duration-fast) var(--ease-out);
+              border-color var(--duration-fast) var(--ease-out);
 }
 .hero-card:nth-child(2) {
   animation-delay: 80ms;
@@ -261,12 +295,12 @@
 .hero-card:active,
 .hero-card.pressing {
   transform: scale(0.96) translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  border-color: rgba(107, 39, 55, 0.55);
 }
 /* Live lift during swipe-up — driven by JS inline style */
 .hero-card.swiping-up {
   transition: none;
-  box-shadow: var(--shadow-lg);
+  border-color: rgba(107, 39, 55, 0.55);
 }
 
 /* Tap ripple */

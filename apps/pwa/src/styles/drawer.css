@@ -18,7 +18,11 @@
   z-index: calc(var(--z-drawer) + 1);
   max-height: 75vh;
   background: var(--color-surface);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  /* Bento: top border outline + large corner radius */
+  border-radius: var(--bento-radius) var(--bento-radius) 0 0;
+  border-top: var(--bento-border);
+  border-left: var(--bento-border);
+  border-right: var(--bento-border);
   box-shadow: var(--shadow-drawer);
   transform: translateY(100%);
   animation: slideUp var(--duration-slow) var(--ease-out) forwards;
@@ -69,13 +73,13 @@
 }
 
 .drawer__toggle-btn {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-sm);
   background: var(--color-surface);
   color: var(--color-text-muted);
   cursor: pointer;
@@ -124,25 +128,26 @@
 }
 .drawer__items::-webkit-scrollbar { display: none; }
 
-/* Item card */
+/* Item card — bento tile with icon zone at top */
 .item-card {
-  width: 150px;
+  width: 148px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-md) var(--space-sm);
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
   background: var(--color-surface-elevated);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border-radius: var(--bento-radius);
+  border: var(--bento-border);
   position: relative;
   scroll-snap-align: start;
   transition: transform var(--duration-fast) var(--ease-spring),
-              box-shadow var(--duration-fast) var(--ease-out);
+              border-color var(--duration-fast) var(--ease-out);
   overflow: hidden;
 }
 .item-card:active {
   transform: scale(0.96);
+  border-color: rgba(107, 39, 55, 0.55);
 }
 /* Warm glow flash on add — triggered via JS class */
 .item-card.item-added {
@@ -154,14 +159,29 @@
   100% { box-shadow: 0 0 0 0 rgba(107, 39, 55, 0); }
 }
 
+/* Bento top zone: icon in a light outlined area */
 .item-card__icon {
-  width: 44px;
-  height: 44px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md) var(--space-md) var(--space-sm);
+  border-bottom: var(--bento-border-inner);
   color: var(--color-accent);
 }
 .item-card__icon svg {
-  width: 100%;
-  height: 100%;
+  width: 48px;
+  height: 48px;
+}
+
+/* Bento bottom zone: name, price, add button */
+.item-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-sm) var(--space-md);
+  flex: 1;
 }
 
 .item-card__name {
@@ -182,24 +202,21 @@
 }
 
 .item-card__add {
-  position: absolute;
-  bottom: var(--space-sm);
-  right: var(--space-sm);
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+  margin-top: var(--space-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  border-radius: 50%;
+  border: var(--bento-border);
+  border-radius: var(--bento-radius-sm);
   background: var(--color-accent);
+  border-color: var(--color-accent);
   color: white;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background var(--duration-fast) var(--ease-out),
               transform var(--duration-fast) var(--ease-spring);
-  overflow: hidden;
-  /* Ripple layer */
   isolation: isolate;
 }
 .item-card__add svg {
@@ -208,6 +225,7 @@
   pointer-events: none;
   flex-shrink: 0;
 }
+
 .item-card__add:active {
   transform: scale(1.15);
   background: var(--color-accent-hover);

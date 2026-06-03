@@ -5,6 +5,47 @@ import type { ActiveOrder } from '../lib/store.js';
 let sideDrawerEl: HTMLElement | null = null;
 let sideOverlayEl: HTMLElement | null = null;
 
+// ── Timeline config ──────────────────────────────────────────────────────────
+const TIMELINE_STEPS = [
+  { id: 'new',       label: 'Placed',    color: '#E53E3E' },
+  { id: 'accepted',  label: 'Accepted',  color: '#DD6B20' },
+  { id: 'preparing', label: 'Preparing', color: '#D69E2E' },
+  { id: 'ready',     label: 'Ready!',    color: '#38A169' },
+];
+const STATE_STEP: Record<string, number> = {
+  new: 0, accepted: 1, preparing: 2, ready: 3, completed: 3,
+};
+
+function buildTimeline(state: string): string {
+  if (state === 'cancelled') {
+    return `<div class="order-timeline order-timeline--cancelled">
+      <div class="order-timeline__cancelled-icon">✕</div>
+      <span class="order-timeline__cancelled-label">Cancelled</span>
+    </div>`;
+  }
+
+  const currentIdx = STATE_STEP[state] ?? 0;
+
+  return `<div class="order-timeline">
+    ${TIMELINE_STEPS.map((step, i) => {
+      const isComplete = i < currentIdx;
+      const isActive   = i === currentIdx;
+      const stateClass = isComplete ? 'complete' : isActive ? 'active' : 'pending';
+      const nextColor  = TIMELINE_STEPS[i + 1]?.color ?? step.color;
+      const isLast     = i === TIMELINE_STEPS.length - 1;
+
+      return `<div class="order-timeline__step ${stateClass}"
+                   style="--step-color:${step.color}; --next-color:${nextColor}">
+        <span class="order-timeline__label">${step.label}</span>
+        <div class="order-timeline__node">
+          <div class="order-timeline__dot"></div>
+          ${!isLast ? '<div class="order-timeline__line"></div>' : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
 export function openSideDrawer(order: ActiveOrder) {
   if (sideDrawerEl) closeSideDrawer();
 
@@ -18,16 +59,6 @@ export function openSideDrawer(order: ActiveOrder) {
   sideDrawerEl = document.createElement('div');
   sideDrawerEl.className = 'side-drawer';
 
-  const statusMap: Record<string, { label: string; color: string; bg: string }> = {
-    new: { label: '🕐 Placed', color: '#92400E', bg: '#FEF3C7' },
-    accepted: { label: '✅ Accepted', color: '#1E40AF', bg: '#DBEAFE' },
-    preparing: { label: '🍳 Preparing', color: '#92400E', bg: '#FDE68A' },
-    ready: { label: '🎉 Ready!', color: '#065F46', bg: '#D1FAE5' },
-    completed: { label: '✓ Done', color: '#6B5744', bg: '#F5E6D3' },
-    cancelled: { label: '❌ Cancelled', color: '#C25B4E', bg: '#FEE2E2' },
-  };
-
-  const status = statusMap[order.state] || statusMap.new;
   const orderTime = new Date(order.created_at);
   const timeAgo = getTimeAgo(orderTime);
 
@@ -36,21 +67,21 @@ export function openSideDrawer(order: ActiveOrder) {
       <div class="side-drawer__code">#${order.order_code}</div>
       <div class="side-drawer__time">${timeAgo}</div>
     </div>
-    <div class="side-drawer__status-cell">
-      <span class="side-drawer__status" style="color: ${status.color}; background: ${status.bg}; border-color: ${status.color}33;">
-        ${status.label}
-      </span>
-      ${order.promised_eta_min ? `
-        <span style="font-size: var(--font-size-xs); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px;">
-          <span style="width:14px;height:14px;display:inline-flex;">${ICONS.clock}</span>~${order.promised_eta_min} min
-        </span>` : ''}
-    </div>
-    <div class="side-drawer__items">
-      ${order.items.map((item: any) => `
-        <div class="side-drawer__item">
-          <span>${item.qty}× ${item.name}</span>
+    <div class="side-drawer__body">
+      <div class="side-drawer__left">
+        ${order.promised_eta_min ? `
+          <div class="side-drawer__eta">
+            <span class="side-drawer__eta-icon">${ICONS.clock}</span>~${order.promised_eta_min} min
+          </div>` : ''}
+        <div class="side-drawer__items">
+          ${order.items.map((item: any) => `
+            <div class="side-drawer__item">
+              <span>${item.qty}× ${item.name}</span>
+            </div>
+          `).join('')}
         </div>
-      `).join('')}
+      </div>
+      ${buildTimeline(order.state)}
     </div>
     <div class="side-drawer__total">
       <span>Total</span>

@@ -323,26 +323,45 @@
   color: var(--color-text-muted);
 }
 
-/* Bento status zone */
-.side-drawer__status-cell {
-  padding: var(--space-sm) var(--space-md);
-  border-bottom: var(--bento-border-inner);
-  flex-shrink: 0;
+/* Bento status zone — REMOVED, replaced by order-timeline */
+
+/* 2-column body: left = eta + items, right = timeline */
+.side-drawer__body {
   display: flex;
-  align-items: center;
-  gap: var(--space-sm);
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-bottom: var(--bento-border-inner);
 }
 
-.side-drawer__status {
+.side-drawer__left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ETA strip just below header */
+.side-drawer__eta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: var(--bento-border-inner);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.side-drawer__eta-icon {
+  width: 13px;
+  height: 13px;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  padding: var(--space-xs) var(--space-md);
-  border-radius: var(--bento-radius-sm);
-  border: 1px solid transparent;
+  color: var(--color-text-muted);
 }
+.side-drawer__eta-icon svg { width: 13px; height: 13px; }
 
 /* Bento items zone */
 .side-drawer__items {
@@ -363,6 +382,119 @@
   border-bottom: var(--bento-border-inner);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
+}
+
+/* ═══════════════════════════════════════════════════
+   Vertical Traffic-Light Order Timeline
+   ═══════════════════════════════════════════════════ */
+.order-timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: var(--space-md) var(--space-sm) var(--space-md) var(--space-xs);
+  gap: 0;
+  flex-shrink: 0;
+  border-left: var(--bento-border-inner);
+}
+
+/* One step = label + (dot + line) side by side */
+.order-timeline__step {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+/* Label on left, dots column on right */
+.order-timeline__label {
+  font-size: 10px;
+  font-family: var(--font-handwritten);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: right;
+  padding-top: 3px;  /* visually center with dot */
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.order-timeline__step.complete .order-timeline__label,
+.order-timeline__step.active .order-timeline__label {
+  color: var(--step-color);
+}
+
+/* Node column: dot stacked above connecting line */
+.order-timeline__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* The status dot */
+.order-timeline__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--step-color, #cbd5e0);
+  background: transparent;
+  flex-shrink: 0;
+  transition: background var(--duration-normal) var(--ease-out),
+              transform var(--duration-fast) var(--ease-spring),
+              box-shadow var(--duration-normal) var(--ease-out);
+}
+/* Completed and active dots fill solid */
+.order-timeline__step.complete .order-timeline__dot {
+  background: var(--step-color);
+  border-color: var(--step-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--step-color) 18%, transparent);
+}
+/* Active (current state) dot pulses */
+.order-timeline__step.active .order-timeline__dot {
+  background: var(--step-color);
+  border-color: var(--step-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--step-color) 22%, transparent);
+  animation: dotPulse 1.8s var(--ease-in-out) infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--step-color) 25%, transparent); }
+  50%       { box-shadow: 0 0 0 6px color-mix(in srgb, var(--step-color) 8%, transparent); }
+}
+
+/* Connecting line between dots — gradient from this step's color to the next */
+.order-timeline__line {
+  width: 2px;
+  height: 32px;
+  background: #e2e8f0;   /* pending: neutral gray */
+  border-radius: 1px;
+  transition: background var(--duration-normal) var(--ease-out);
+}
+.order-timeline__step.complete .order-timeline__line {
+  background: linear-gradient(to bottom, var(--step-color), var(--next-color));
+}
+.order-timeline__step.active .order-timeline__line {
+  background: linear-gradient(
+    to bottom,
+    var(--step-color) 0%,
+    color-mix(in srgb, var(--step-color) 30%, #e2e8f0) 100%
+  );
+}
+
+/* Cancelled state variant */
+.order-timeline--cancelled {
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+}
+.order-timeline__cancelled-icon {
+  font-size: var(--font-size-lg);
+  color: #E53E3E;
+  font-weight: 700;
+  line-height: 1;
+}
+.order-timeline__cancelled-label {
+  font-size: 10px;
+  font-family: var(--font-handwritten);
+  font-weight: 600;
+  color: #E53E3E;
 }
 
 /* Bento total footer zone */

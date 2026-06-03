@@ -13,14 +13,14 @@ export function renderHome(): HTMLElement {
   const heroesEl = document.createElement('div');
   heroesEl.className = 'home__heroes';
   heroesEl.innerHTML = `
-    <div class="hero-card touchable" id="hero-sips" role="button" aria-label="Browse Sips menu" tabindex="0">
-      <div class="hero-card__icon">${ICONS.coffee}</div>
-      <span class="hero-card__label">Sips</span>
-      <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
-    </div>
     <div class="hero-card touchable" id="hero-bites" role="button" aria-label="Browse Bites menu" tabindex="0">
       <div class="hero-card__icon">${ICONS.food}</div>
       <span class="hero-card__label">Bites</span>
+      <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
+    </div>
+    <div class="hero-card touchable" id="hero-sips" role="button" aria-label="Browse Sips menu" tabindex="0">
+      <div class="hero-card__icon">${ICONS.coffee}</div>
+      <span class="hero-card__label">Sips</span>
       <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
     </div>`;
 

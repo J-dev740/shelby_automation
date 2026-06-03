@@ -2,21 +2,70 @@ import { ICONS } from '../assets/icons.js';
 import { store, subscribe, addToCart } from '../lib/store.js';
 import type { MenuItem } from '../lib/store.js';
 
-/** Maps a category name to its sprite symbol ID */
-function iconForCategory(categoryName: string): string {
-  const n = categoryName.toLowerCase();
-  if (n.includes('cold')) return 'icon-cold-coffee';
-  if (n.includes('hot') || n.includes('cappuccino') || n.includes('espresso') || n.includes('latte') || n.includes('flat') || n.includes('mocha') || n.includes('filter')) return 'icon-hot-coffee';
-  if (n.includes('tea') || n.includes('chai')) return 'icon-tea';
-  if (n.includes('smooth') || n.includes('blend')) return 'icon-smoothie';
-  if (n.includes('sandwich') || n.includes('toast') || n.includes('paneer') || n.includes('avocado') || n.includes('club')) return 'icon-sandwich';
-  if (n.includes('muffin') || n.includes('croissant') || n.includes('bak') || n.includes('cookie')) return 'icon-bakery';
-  if (n.includes('brownie') || n.includes('dessert') || n.includes('cake') || n.includes('chocolate')) return 'icon-dessert';
-  if (n.includes('mojito') || n.includes('mocktail') || n.includes('juice') || n.includes('watermelon')) return 'icon-mocktail';
-  if (n.includes('extra') || n.includes('add') || n.includes('syrup') || n.includes('shot') || n.includes('oat') || n.includes('flavour')) return 'icon-addon';
-  if (n.includes('milk coffee') || n.includes('black coffee') || n.includes('black tea') || n.includes('milk tea') || n.includes('special')) return 'icon-hot-coffee';
-  return 'icon-sip'; // fallback
+/** Maps a menu item name to its unique sprite symbol ID */
+function iconForItem(itemName: string): string {
+  const ITEM_ICON_MAP: Record<string, string> = {
+    'rose tea': 'icon-rose-tea',
+    'classic cold coffee': 'icon-classic-cold-coffee',
+    'masala tea': 'icon-masala-tea',
+    'hazelnut cold coffee': 'icon-hazelnut-cold-coffee',
+    'caramel cold coffee': 'icon-caramel-cold-coffee',
+    'cold brew': 'icon-cold-brew',
+    'spanish latte': 'icon-spanish-latte',
+    'dalgona coffee': 'icon-dalgona-coffee',
+    'lemon honey tea': 'icon-lemon-honey-tea',
+    'espresso': 'icon-espresso',
+    'cappuccino': 'icon-cappuccino',
+    'flat white': 'icon-flat-white',
+    'café latte': 'icon-cafe-latte',
+    'cafe latte': 'icon-cafe-latte',
+    'mocha': 'icon-mocha',
+    'filter coffee': 'icon-filter-coffee',
+    'masala chai': 'icon-masala-chai',
+    'shelby signature coffee': 'icon-shelby-signature',
+    'ginger lemon tea': 'icon-ginger-lemon-tea',
+    'hazelnut coffee': 'icon-hazelnut-coffee',
+    'matcha latte': 'icon-matcha-latte',
+    'black tea': 'icon-black-tea',
+    'black coffee': 'icon-black-coffee',
+    'mango smoothie': 'icon-mango-smoothie',
+    'mixed berry smoothie': 'icon-berry-smoothie',
+    'banana peanut butter': 'icon-banana-pb',
+    'hot chocolate': 'icon-hot-chocolate',
+    'premium cold coffee': 'icon-premium-cold-coffee',
+    'irish cold coffee': 'icon-irish-cold-coffee',
+    'watermelon mojito': 'icon-watermelon-mojito',
+    'extra espresso shot': 'icon-espresso-shot',
+    'oat milk swap': 'icon-oat-milk',
+    'flavour syrup': 'icon-flavour-syrup',
+    'veg club sandwich': 'icon-veg-club',
+    'paneer tikka sandwich': 'icon-paneer-tikka',
+    'avocado toast': 'icon-avocado-toast',
+    'banana walnut muffin': 'icon-banana-muffin',
+    'chocolate brownie': 'icon-brownie',
+    'butter croissant': 'icon-croissant',
+  };
+  const key = itemName.toLowerCase().trim();
+  // Exact match first
+  if (ITEM_ICON_MAP[key]) return ITEM_ICON_MAP[key];
+  // Fuzzy match — check if item name contains any key
+  for (const [k, v] of Object.entries(ITEM_ICON_MAP)) {
+    if (key.includes(k) || k.includes(key)) return v;
+  }
+  // Fallback based on item name keywords
+  const n = key;
+  if (n.includes('cold') || n.includes('iced')) return 'icon-classic-cold-coffee';
+  if (n.includes('tea') || n.includes('chai')) return 'icon-masala-tea';
+  if (n.includes('coffee') || n.includes('latte') || n.includes('cappuccino')) return 'icon-espresso';
+  if (n.includes('smooth')) return 'icon-mango-smoothie';
+  if (n.includes('mojito') || n.includes('juice')) return 'icon-watermelon-mojito';
+  if (n.includes('sandwich') || n.includes('toast')) return 'icon-veg-club';
+  if (n.includes('muffin') || n.includes('cake')) return 'icon-banana-muffin';
+  if (n.includes('brownie') || n.includes('chocolate')) return 'icon-brownie';
+  if (n.includes('croissant')) return 'icon-croissant';
+  return 'icon-espresso'; // ultimate fallback
 }
+
 
 
 let drawerEl: HTMLElement | null = null;
@@ -96,7 +145,7 @@ function renderDrawerContent() {
       ${items.map(item => `
         <div class="item-card" data-item-id="${item.id}">
           <div class="item-card__icon">
-            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="/menu-sprite.svg#${iconForCategory(item.category_name)}"></use></svg>
+            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="/menu-sprite.svg#${iconForItem(item.name)}"></use></svg>
           </div>
           <span class="item-card__name">${item.name}</span>
           <span class="item-card__price">&#x20B9;${item.price_inr}</span>

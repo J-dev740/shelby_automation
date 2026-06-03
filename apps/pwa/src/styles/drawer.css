@@ -55,9 +55,11 @@
 }
 
 .drawer__title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-handwritten);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
   color: var(--color-text-primary);
+  transition: opacity 150ms ease;
 }
 
 /* Mini sips/bites toggle */
@@ -147,9 +149,9 @@
   animation: cardGlow 350ms var(--ease-out) forwards;
 }
 @keyframes cardGlow {
-  0%   { box-shadow: 0 0 0 0 rgba(199, 131, 90, 0); }
-  30%  { box-shadow: 0 0 0 6px rgba(199, 131, 90, 0.25); }
-  100% { box-shadow: 0 0 0 0 rgba(199, 131, 90, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(107, 39, 55, 0); }
+  30%  { box-shadow: 0 0 0 6px rgba(107, 39, 55, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(107, 39, 55, 0); }
 }
 
 .item-card__icon {
@@ -163,12 +165,13 @@
 }
 
 .item-card__name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-family: var(--font-handwritten);
+  font-size: var(--font-size-md);
+  font-weight: 600;
   color: var(--color-text-primary);
   text-align: center;
   line-height: var(--line-height-tight);
-  max-height: 2.4em;
+  max-height: 2.6em;
   overflow: hidden;
 }
 

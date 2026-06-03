@@ -8,10 +8,10 @@
   justify-content: center;
   background: linear-gradient(
     160deg,
-    #FAF3EB 0%,
-    #F5E6D3 30%,
-    #EADBC8 60%,
-    #D4B896 100%
+    #E8DCC8 0%,
+    #DED1BC 30%,
+    #D4C5B0 60%,
+    #C7B9A3 100%
   );
   animation: splashFade 300ms var(--ease-out) 1800ms forwards;
   gap: var(--space-md);
@@ -28,10 +28,11 @@
 }
 
 .splash__name {
+  font-family: var(--font-handwritten);
   font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
+  font-weight: 700;
   color: var(--color-accent-dark);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   opacity: 0;
   animation: splashTextIn 600ms var(--ease-out) 200ms forwards;

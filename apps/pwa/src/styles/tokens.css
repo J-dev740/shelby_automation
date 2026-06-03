@@ -1,20 +1,20 @@
 :root {
-  /* Earthy warm palette */
-  --color-bg-primary: #FAF3EB;
-  --color-bg-secondary: #F5E6D3;
-  --color-surface: #FFFFFF;
-  --color-surface-elevated: #FFFBF5;
-  --color-accent: #C7835A;
-  --color-accent-hover: #B5724C;
-  --color-accent-dark: #8B5E3C;
+  /* Craft paper + burgundy palette — inspired by artisan café aesthetic */
+  --color-bg-primary: #E8DCC8;
+  --color-bg-secondary: #DED1BC;
+  --color-surface: #F5EFE3;
+  --color-surface-elevated: #FBF7F0;
+  --color-accent: #6B2737;
+  --color-accent-hover: #52202C;
+  --color-accent-dark: #3E1520;
   --color-text-primary: #2D1B0E;
   --color-text-secondary: #6B5744;
   --color-text-muted: #A89485;
-  --color-success: #7CAA6E;
-  --color-warning: #E8A244;
-  --color-danger: #C25B4E;
-  --color-border: #E8DDD0;
-  --color-overlay: rgba(45, 27, 14, 0.4);
+  --color-success: #5E8C4A;
+  --color-warning: #C48B2F;
+  --color-danger: #B84A3F;
+  --color-border: #D4C9B8;
+  --color-overlay: rgba(45, 27, 14, 0.45);
 
   /* Radius */
   --radius-sm: 8px;
@@ -23,14 +23,15 @@
   --radius-pill: 999px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(45, 27, 14, 0.06);
-  --shadow-md: 0 4px 12px rgba(45, 27, 14, 0.08);
-  --shadow-lg: 0 8px 24px rgba(45, 27, 14, 0.1);
-  --shadow-drawer: 0 -8px 30px rgba(45, 27, 14, 0.12);
-  --shadow-bar: 0 -2px 16px rgba(45, 27, 14, 0.1);
+  --shadow-sm: 0 1px 3px rgba(45, 27, 14, 0.08);
+  --shadow-md: 0 4px 12px rgba(45, 27, 14, 0.1);
+  --shadow-lg: 0 8px 24px rgba(45, 27, 14, 0.12);
+  --shadow-drawer: 0 -8px 30px rgba(45, 27, 14, 0.14);
+  --shadow-bar: 0 -2px 16px rgba(45, 27, 14, 0.12);
 
   /* Typography */
   --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-handwritten: 'Caveat', cursive;
   --font-size-xs: 0.6875rem;   /* 11px */
   --font-size-sm: 0.8125rem;   /* 13px */
   --font-size-md: 0.9375rem;   /* 15px */

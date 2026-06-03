@@ -1,150 +1,719 @@
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
 
-  <!-- Cold Coffee: iced cup with straw + condensation drops -->
-  <symbol id="icon-cold-coffee" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M16 20h32l-4 32H20L16 20z"/>
-    <path d="M12 20h40"/>
-    <!-- Straw -->
-    <line x1="38" y1="10" x2="34" y2="52"/>
-    <!-- Ice cubes -->
-    <rect x="22" y="30" width="8" height="8" rx="2"/>
-    <rect x="33" y="34" width="7" height="7" rx="2"/>
-    <!-- Condensation drops -->
-    <circle cx="13" cy="32" r="1.5" fill="currentColor" stroke="none"/>
-    <circle cx="11" cy="40" r="1" fill="currentColor" stroke="none"/>
-    <circle cx="52" cy="28" r="1.2" fill="currentColor" stroke="none"/>
+  <!-- 1. Rose Tea — teacup with rose petal floating, steam curl with rose bud -->
+  <symbol id="icon-rose-tea" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 26h28v16c0 5-6 9-14 9s-14-4-14-9V26z"/>
+      <path d="M42 30h4c3 0 5 2 5 4.5S49 39 46 39h-4"/>
+      <ellipse cx="28" cy="51" rx="18" ry="3"/>
+      <path d="M22 20c0-5 3-5 3 0"/>
+      <path d="M28 18c0-5 3-5 3 0"/>
+      <path d="M34 20c0-5 3-5 3 0"/>
+      <!-- Rose petal floating in tea -->
+      <path d="M26 34c2-3 6-3 8 0c-1 3-7 3-8 0" stroke-width="1.2"/>
+      <circle cx="30" cy="33" r="1" fill="currentColor" stroke="none"/>
+      <!-- Tiny rose bud accent -->
+      <circle cx="10" cy="22" r="2.5" stroke-width="1.2"/>
+      <path d="M10 19c0-2 2-3 3-1" stroke-width="1"/>
+      <path d="M8 24c2 1 3 3 3 5" stroke-width="1"/>
+    </g>
   </symbol>
 
-  <!-- Hot Coffee: cup with saucer + two steam curls -->
-  <symbol id="icon-hot-coffee" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M16 28h24v18c0 4-5 7-12 7s-12-3-12-7V28z"/>
-    <path d="M40 32h5c3 0 5 2 5 5s-2 5-5 5h-5"/>
-    <!-- Saucer -->
-    <ellipse cx="28" cy="53" rx="18" ry="3"/>
-    <!-- Steam curls -->
-    <path d="M22 22 Q20 18 22 14 Q24 10 22 6"/>
-    <path d="M30 20 Q28 16 30 12 Q32 8 30 4"/>
-    <path d="M38 22 Q36 18 38 14 Q40 10 38 6"/>
+  <!-- 2. Classic Cold Coffee — tall glass, ice cubes, straw, condensation -->
+  <symbol id="icon-classic-cold-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 14h28l-4 40H22L18 14z"/>
+      <line x1="16" y1="14" x2="48" y2="14" stroke-width="1.6"/>
+      <line x1="38" y1="6" x2="35" y2="54"/>
+      <rect x="24" y="26" width="7" height="6" rx="1.5" stroke-width="1.2"/>
+      <rect x="33" y="32" width="6" height="5" rx="1.5" stroke-width="1.2"/>
+      <rect x="26" y="38" width="6" height="5" rx="1.5" stroke-width="1.2"/>
+      <circle cx="16" cy="28" r="1.2" fill="currentColor" stroke="none"/>
+      <circle cx="14" cy="36" r="0.9" fill="currentColor" stroke="none"/>
+      <circle cx="48" cy="24" r="1" fill="currentColor" stroke="none"/>
+      <circle cx="50" cy="32" r="0.8" fill="currentColor" stroke="none"/>
+    </g>
   </symbol>
 
-  <!-- Tea: teacup with teabag string + tag -->
-  <symbol id="icon-tea" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M14 24h28v18c0 5-6 9-14 9s-14-4-14-9V24z"/>
-    <path d="M42 28h4c3 0 5 2 5 4s-2 4-5 4h-4"/>
-    <!-- Saucer -->
-    <ellipse cx="28" cy="51" rx="20" ry="3.5"/>
-    <!-- Teabag string -->
-    <line x1="28" y1="14" x2="28" y2="36"/>
-    <!-- Teabag tag -->
-    <rect x="22" y="8" width="12" height="8" rx="2"/>
-    <!-- Knot -->
-    <circle cx="28" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+  <!-- 3. Masala Tea — cutting chai glass with cardamom + cinnamon -->
+  <symbol id="icon-masala-tea" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Cutting chai glass shape -->
+      <path d="M22 18h20l-2 30c0 2-3 4-8 4s-8-2-8-4L22 18z"/>
+      <line x1="20" y1="18" x2="44" y2="18" stroke-width="1.6"/>
+      <!-- Tea level -->
+      <path d="M24 28h16" stroke-width="1" opacity="0.5"/>
+      <!-- Steam -->
+      <path d="M28 14c0-4 2-4 2 0" stroke-width="1.2"/>
+      <path d="M34 12c0-4 2-4 2 0" stroke-width="1.2"/>
+      <!-- Cardamom pod -->
+      <ellipse cx="50" cy="36" rx="3" ry="5" stroke-width="1.2"/>
+      <line x1="50" y1="31" x2="50" y2="41"/>
+      <path d="M48 36h4" stroke-width="0.8"/>
+      <!-- Cinnamon stick -->
+      <path d="M8 30c8 0 8 6 0 6" stroke-width="1.5"/>
+      <path d="M10 30c6 0 6 6 0 6" stroke-width="1"/>
+    </g>
   </symbol>
 
-  <!-- Smoothie: tall glass with layered waves + straw -->
-  <symbol id="icon-smoothie" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M18 16h28l-4 40H22L18 16z"/>
-    <line x1="18" y1="16" x2="46" y2="16"/>
-    <!-- Layered smoothie waves -->
-    <path d="M20 28 Q28 24 36 28 Q44 32 52 28" stroke-width="1.2" opacity="0.7"/>
-    <path d="M20 38 Q28 34 36 38 Q44 42 52 38" stroke-width="1.2" opacity="0.5"/>
-    <!-- Straw -->
-    <line x1="40" y1="8" x2="37" y2="56"/>
-    <!-- Lid rim -->
-    <path d="M16 16 Q32 12 48 16" stroke-width="1.2"/>
+  <!-- 4. Hazelnut Cold Coffee — iced glass with hazelnuts -->
+  <symbol id="icon-hazelnut-cold-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 16h24l-3 36H23L20 16z"/>
+      <line x1="18" y1="16" x2="46" y2="16" stroke-width="1.5"/>
+      <line x1="36" y1="8" x2="34" y2="52"/>
+      <rect x="25" y="28" width="6" height="5" rx="1.5" stroke-width="1.2"/>
+      <rect x="33" y="34" width="5" height="4" rx="1.5" stroke-width="1.2"/>
+      <!-- Hazelnuts -->
+      <circle cx="10" cy="44" r="4" stroke-width="1.3"/>
+      <path d="M7 40c3-2 6 0 6 0" stroke-width="1.2"/>
+      <circle cx="52" cy="46" r="3.5" stroke-width="1.3"/>
+      <path d="M49 42c3-2 6 0 5.5 0" stroke-width="1.2"/>
+    </g>
   </symbol>
 
-  <!-- Sandwich: two bread slices with visible filling layers -->
-  <symbol id="icon-sandwich" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Top bread -->
-    <path d="M10 22 Q32 14 54 22 L52 28 Q32 20 12 28Z"/>
-    <!-- Lettuce -->
-    <path d="M12 30 Q20 26 28 30 Q36 34 44 30 Q50 27 52 30" stroke-width="1.2"/>
-    <!-- Tomato layer -->
-    <rect x="14" y="32" width="36" height="4" rx="2"/>
-    <!-- Cheese -->
-    <path d="M12 38 L52 38 L54 42 L10 42Z" stroke-width="1.2"/>
-    <!-- Bottom bread -->
-    <path d="M10 42 L54 42 L52 50 Q32 56 12 50Z"/>
+  <!-- 5. Caramel Cold Coffee — glass with caramel drizzle swirls -->
+  <symbol id="icon-caramel-cold-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 16h24l-3 36H23L20 16z"/>
+      <line x1="18" y1="16" x2="46" y2="16" stroke-width="1.5"/>
+      <line x1="37" y1="8" x2="35" y2="52"/>
+      <!-- Caramel drizzle swirls -->
+      <path d="M24 22c4 2 8-2 12 1c4 3 0 5-2 3" stroke-width="1.8" opacity="0.7"/>
+      <path d="M26 32c3 2 6-1 10 1" stroke-width="1.5" opacity="0.6"/>
+      <path d="M27 40c2 1 5-1 8 1" stroke-width="1.3" opacity="0.5"/>
+      <!-- Whipped cream on top -->
+      <path d="M22 16c2-4 6-5 10-4c4 1 8 0 10 4" stroke-width="1.3"/>
+    </g>
   </symbol>
 
-  <!-- Bakery: muffin with domed top in a ridged wrapper -->
-  <symbol id="icon-bakery" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Muffin dome -->
-    <path d="M18 32 Q18 10 32 10 Q46 10 46 32"/>
-    <!-- Wrapper body -->
-    <path d="M14 32h36v18H14z" rx="2"/>
-    <!-- Wrapper ridges -->
-    <line x1="22" y1="32" x2="22" y2="50"/>
-    <line x1="30" y1="32" x2="30" y2="50"/>
-    <line x1="38" y1="32" x2="38" y2="50"/>
-    <line x1="46" y1="32" x2="46" y2="50"/>
-    <!-- Sprinkle on top -->
-    <line x1="26" y1="18" x2="29" y2="15" stroke-width="2" stroke-linecap="round"/>
-    <line x1="36" y1="15" x2="33" y2="19" stroke-width="2" stroke-linecap="round"/>
+  <!-- 6. Cold Brew — mason jar with flat lid -->
+  <symbol id="icon-cold-brew" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Mason jar body -->
+      <rect x="16" y="18" width="32" height="36" rx="4"/>
+      <!-- Jar neck -->
+      <path d="M20 18v-4h24v4"/>
+      <!-- Lid -->
+      <rect x="18" y="10" width="28" height="4" rx="2" stroke-width="1.5"/>
+      <!-- Straw hole -->
+      <circle cx="38" cy="12" r="2"/>
+      <line x1="38" y1="6" x2="36" y2="46"/>
+      <!-- Dark brew level -->
+      <path d="M18 30h28" stroke-width="1" opacity="0.4"/>
+      <!-- Cold drip dots -->
+      <circle cx="28" cy="36" r="1" fill="currentColor" stroke="none" opacity="0.4"/>
+      <circle cx="34" cy="40" r="0.8" fill="currentColor" stroke="none" opacity="0.4"/>
+      <circle cx="26" cy="44" r="0.7" fill="currentColor" stroke="none" opacity="0.4"/>
+    </g>
   </symbol>
 
-  <!-- Dessert: stack of brownie squares -->
-  <symbol id="icon-dessert" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Bottom layer -->
-    <rect x="10" y="46" width="44" height="10" rx="3"/>
-    <!-- Middle layer -->
-    <rect x="14" y="34" width="36" height="12" rx="3"/>
-    <!-- Top layer -->
-    <rect x="18" y="22" width="28" height="12" rx="3"/>
-    <!-- Drizzle lines on top layer -->
-    <path d="M22 26 Q28 22 34 26 Q40 30 44 26" stroke-width="1.2" opacity="0.8"/>
-    <!-- Crack texture on middle -->
-    <path d="M18 40 Q26 37 32 40 Q38 43 46 40" stroke-width="1" opacity="0.5"/>
+  <!-- 7. Spanish Latte — two-layer glass -->
+  <symbol id="icon-spanish-latte" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 14h24l-2 38H22L20 14z"/>
+      <line x1="18" y1="14" x2="46" y2="14" stroke-width="1.5"/>
+      <!-- Two layers visible -->
+      <path d="M22 36h20" stroke-width="1.2" opacity="0.6"/>
+      <!-- Bottom condensed milk (denser hatching) -->
+      <path d="M23 40h18" stroke-width="0.6" opacity="0.3"/>
+      <path d="M23 44h17" stroke-width="0.6" opacity="0.3"/>
+      <path d="M23 48h16" stroke-width="0.6" opacity="0.3"/>
+      <!-- Steam wisps -->
+      <path d="M28 10c0-3 2-3 2 0" stroke-width="1.1"/>
+      <path d="M34 8c0-3 2-3 2 0" stroke-width="1.1"/>
+      <!-- Tiny heart latte art -->
+      <path d="M30 24c-1-2 1-4 3-2c2-2 4 0 3 2c-1 2-3 4-3 4s-2-2-3-4" stroke-width="1" fill="currentColor" opacity="0.3"/>
+    </g>
   </symbol>
 
-  <!-- Add-on / Extra: plus inside a sparkle circle -->
-  <symbol id="icon-addon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="32" cy="32" r="20"/>
-    <line x1="32" y1="22" x2="32" y2="42"/>
-    <line x1="22" y1="32" x2="42" y2="32"/>
-    <!-- Small sparkle accents -->
-    <line x1="50" y1="14" x2="50" y2="18"/>
-    <line x1="48" y1="16" x2="52" y2="16"/>
-    <line x1="14" y1="48" x2="14" y2="52"/>
-    <line x1="12" y1="50" x2="16" y2="50"/>
+  <!-- 8. Dalgona Coffee — glass with whipped cloud + tiny whisk -->
+  <symbol id="icon-dalgona-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 22h24l-2 32H22L20 22z"/>
+      <line x1="18" y1="22" x2="46" y2="22" stroke-width="1.5"/>
+      <!-- Milk level -->
+      <path d="M22 34h20" stroke-width="0.8" opacity="0.4"/>
+      <!-- Whipped cloud on top -->
+      <path d="M18 22c0-6 4-10 8-10c2-5 8-6 10-2c4-2 8 0 8 5c2 2 3 5 0 7"/>
+      <!-- Tiny whisk -->
+      <path d="M52 16l-4 14" stroke-width="1.5"/>
+      <path d="M48 30c-1 2 0 4 2 3" stroke-width="1"/>
+      <path d="M48 30c1 2 2 3 3 1" stroke-width="1"/>
+      <path d="M48 30c0 2 1 4 2.5 2.5" stroke-width="1"/>
+    </g>
   </symbol>
 
-  <!-- Mocktail: cocktail glass with citrus slice on rim -->
-  <symbol id="icon-mocktail" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Glass body -->
-    <path d="M14 12 L28 40 L28 54 L36 54 L36 40 L50 12Z"/>
-    <line x1="14" y1="12" x2="50" y2="12"/>
-    <line x1="24" y1="54" x2="40" y2="54"/>
-    <!-- Straw -->
-    <line x1="42" y1="12" x2="36" y2="54"/>
-    <!-- Citrus slice on rim -->
-    <circle cx="48" cy="18" r="8"/>
-    <line x1="48" y1="10" x2="48" y2="26"/>
-    <line x1="40" y1="14" x2="56" y2="22"/>
-    <line x1="40" y1="22" x2="56" y2="14"/>
-    <!-- Liquid line inside glass -->
-    <path d="M18 26 Q32 22 46 26" stroke-width="1" opacity="0.6"/>
+  <!-- 9. Lemon Honey Tea — cup with lemon slice + honey dipper -->
+  <symbol id="icon-lemon-honey-tea" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 26h24v16c0 4-5 8-12 8s-12-4-12-8V26z"/>
+      <path d="M40 30h4c2.5 0 4 2 4 4s-1.5 4-4 4h-4"/>
+      <ellipse cx="28" cy="50" rx="16" ry="2.5"/>
+      <path d="M24 22c0-3 2-3 2 0"/>
+      <path d="M30 20c0-3 2-3 2 0"/>
+      <!-- Lemon slice on rim -->
+      <circle cx="40" cy="24" r="6"/>
+      <line x1="40" y1="18" x2="40" y2="30"/>
+      <line x1="34" y1="21" x2="46" y2="27"/>
+      <line x1="34" y1="27" x2="46" y2="21"/>
+      <!-- Honey dipper -->
+      <line x1="8" y1="18" x2="12" y2="38" stroke-width="1.5"/>
+      <ellipse cx="12" cy="40" rx="3" ry="4"/>
+      <path d="M9 38h6" stroke-width="0.8"/>
+      <path d="M9 40h6" stroke-width="0.8"/>
+      <path d="M9 42h6" stroke-width="0.8"/>
+      <!-- Honey drip -->
+      <path d="M12 44c0 2 0 4-1 5" stroke-width="1" opacity="0.6"/>
+    </g>
   </symbol>
 
-  <!-- Generic Sip (fallback): simple outlined cup -->
-  <symbol id="icon-sip" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 22h32v24c0 6-6 10-16 10s-16-4-16-10V22z"/>
-    <path d="M44 28h6c4 0 6 3 6 6s-2 6-6 6h-6"/>
-    <path d="M20 14 Q20 10 24 10"/>
-    <path d="M28 12 Q28 6 32 6"/>
-    <path d="M36 14 Q36 10 40 10"/>
+  <!-- 10. Espresso — small espresso cup, bold crema, single steam -->
+  <symbol id="icon-espresso" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 28h20v12c0 4-4 7-10 7s-10-3-10-7V28z"/>
+      <path d="M38 31h4c2 0 3.5 1.5 3.5 3.5S44 38 42 38h-4"/>
+      <ellipse cx="28" cy="47" rx="14" ry="3"/>
+      <!-- Crema line -->
+      <path d="M20 32h16" stroke-width="1.8" opacity="0.5"/>
+      <!-- Single bold steam curl -->
+      <path d="M28 22c-2-4 0-8 2-12c2-4 4-2 2 2c-2 4-4 6-2 10" stroke-width="1.5"/>
+    </g>
   </symbol>
 
-  <!-- Generic Bite (fallback): plate with dome cloche -->
-  <symbol id="icon-bite" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <ellipse cx="32" cy="50" rx="26" ry="5"/>
-    <path d="M6 50 Q6 24 32 24 Q58 24 58 50"/>
-    <ellipse cx="32" cy="50" rx="26" ry="5"/>
-    <line x1="6" y1="50" x2="58" y2="50"/>
-    <!-- Dome handle -->
-    <circle cx="32" cy="24" r="4"/>
-    <line x1="32" y1="24" x2="32" y2="20"/>
+  <!-- 11. Cappuccino — cup with latte art leaf from above -->
+  <symbol id="icon-cappuccino" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 26h28v16c0 5-6 9-14 9s-14-4-14-9V26z"/>
+      <path d="M42 30h4c3 0 5 2 5 4.5S49 39 46 39h-4"/>
+      <ellipse cx="28" cy="51" rx="18" ry="3"/>
+      <!-- Latte art leaf (top-down view) -->
+      <path d="M28 30v12" stroke-width="1.2"/>
+      <path d="M28 32c-3-1-5 1-5 3c0 2 2 3 5 1" stroke-width="1.1"/>
+      <path d="M28 32c3-1 5 1 5 3c0 2-2 3-5 1" stroke-width="1.1"/>
+      <path d="M28 36c-2-1-4 0-4 2c0 1.5 2 2.5 4 1" stroke-width="1.1"/>
+      <path d="M28 36c2-1 4 0 4 2c0 1.5-2 2.5-4 1" stroke-width="1.1"/>
+      <!-- Small steam -->
+      <path d="M24 22c0-3 2-3 2 0"/>
+      <path d="M30 20c0-4 2-4 2 0"/>
+    </g>
+  </symbol>
+
+  <!-- 12. Flat White — wide cup, micro-foam dots -->
+  <symbol id="icon-flat-white" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Wide-brim cup -->
+      <path d="M10 28h36v14c0 5-8 9-18 9s-18-4-18-9V28z"/>
+      <path d="M46 32h4c2.5 0 4 2 4 4s-1.5 4-4 4h-4"/>
+      <ellipse cx="28" cy="51" rx="20" ry="3"/>
+      <!-- Micro-foam dot pattern -->
+      <circle cx="22" cy="33" r="0.8" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="28" cy="32" r="0.8" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="34" cy="33" r="0.8" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="25" cy="36" r="0.6" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="31" cy="35" r="0.6" fill="currentColor" stroke="none" opacity="0.3"/>
+      <!-- Minimal steam -->
+      <path d="M26 24c0-3 1.5-3 1.5 0" stroke-width="1"/>
+    </g>
+  </symbol>
+
+  <!-- 13. Café Latte — tall glass, milk-to-coffee gradient -->
+  <symbol id="icon-cafe-latte" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 14h24l-2 40H22L20 14z"/>
+      <line x1="18" y1="14" x2="46" y2="14" stroke-width="1.5"/>
+      <!-- Gradient layers -->
+      <path d="M22 24h20" stroke-width="0.7" opacity="0.2"/>
+      <path d="M22 30h20" stroke-width="0.8" opacity="0.3"/>
+      <path d="M23 36h18" stroke-width="0.9" opacity="0.4"/>
+      <path d="M23 42h17" stroke-width="1" opacity="0.5"/>
+      <!-- Foam on top -->
+      <path d="M22 20c3-2 6-1 10-1c4 0 7-1 10 1" stroke-width="1.2"/>
+      <!-- Steam -->
+      <path d="M28 10c0-3 2-3 2 0" stroke-width="1"/>
+      <path d="M34 8c0-3 2-3 2 0" stroke-width="1"/>
+    </g>
+  </symbol>
+
+  <!-- 14. Mocha — cup with chocolate squares + whipped cream peak -->
+  <symbol id="icon-mocha" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 28h24v14c0 4-5 7-12 7s-12-3-12-7V28z"/>
+      <path d="M40 31h4c2.5 0 4 1.5 4 3.5s-1.5 3.5-4 3.5h-4"/>
+      <ellipse cx="28" cy="49" rx="16" ry="2.5"/>
+      <!-- Whipped cream peak -->
+      <path d="M24 28c2-6 8-6 8-6s6 0 8 6" stroke-width="1.3"/>
+      <path d="M32 22c0-3 1-5 0-5" stroke-width="1"/>
+      <!-- Chocolate squares -->
+      <rect x="6" y="40" width="7" height="7" rx="1" stroke-width="1.2"/>
+      <line x1="6" y1="43.5" x2="13" y2="43.5" stroke-width="0.7" opacity="0.5"/>
+      <line x1="9.5" y1="40" x2="9.5" y2="47" stroke-width="0.7" opacity="0.5"/>
+      <rect x="50" y="42" width="6" height="6" rx="1" stroke-width="1.2"/>
+    </g>
+  </symbol>
+
+  <!-- 15. Filter Coffee — South Indian tumbler-davara -->
+  <symbol id="icon-filter-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Davara (top bowl) -->
+      <path d="M12 18h18v4c0 3-4 5-9 5s-9-2-9-5V18z"/>
+      <ellipse cx="21" cy="18" rx="9" ry="2.5"/>
+      <!-- Tumbler (bottom) -->
+      <path d="M34 32h18v16c0 3-4 5-9 5s-9-2-9-5V32z"/>
+      <ellipse cx="43" cy="32" rx="9" ry="2.5"/>
+      <!-- Coffee being poured between them -->
+      <path d="M21 27c0 4 4 8 8 12c4 4 8 6 14 6" stroke-width="1.8" opacity="0.6"/>
+      <!-- Steam from tumbler -->
+      <path d="M40 28c0-3 2-3 2 0" stroke-width="1"/>
+      <path d="M46 26c0-3 2-3 2 0" stroke-width="1"/>
+    </g>
+  </symbol>
+
+  <!-- 16. Masala Chai — kullad (clay cup) with star anise + ginger -->
+  <symbol id="icon-masala-chai" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Kullad (clay cup) -->
+      <path d="M18 24h28l-4 24c-1 3-5 5-10 5s-9-2-10-5L18 24z"/>
+      <line x1="16" y1="24" x2="48" y2="24" stroke-width="1.6"/>
+      <!-- Textured clay lines -->
+      <path d="M20 30h24" stroke-width="0.6" opacity="0.3"/>
+      <!-- Steam -->
+      <path d="M26 18c-1-4 1-6 3-8" stroke-width="1.2"/>
+      <path d="M32 16c-1-4 1-6 3-8" stroke-width="1.2"/>
+      <path d="M38 18c-1-4 1-6 3-8" stroke-width="1.2"/>
+      <!-- Star anise -->
+      <circle cx="10" cy="42" r="5"/>
+      <line x1="10" y1="37" x2="10" y2="47"/>
+      <line x1="5" y1="39" x2="15" y2="45"/>
+      <line x1="5" y1="45" x2="15" y2="39"/>
+      <circle cx="10" cy="42" r="1.5" fill="currentColor" stroke="none"/>
+      <!-- Ginger root -->
+      <path d="M50 38c3 0 6 2 6 5c0 2-1 3-3 3c-2 0-2-2-4-2c-2 0-3 3-5 2c-1-1 0-3 2-4c2-1 2-4 4-4" stroke-width="1.2"/>
+    </g>
+  </symbol>
+
+  <!-- 17. Shelby Signature — premium cup with "S" monogram -->
+  <symbol id="icon-shelby-signature" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 26h28v16c0 5-6 9-14 9s-14-4-14-9V26z"/>
+      <path d="M42 30h4c3 0 5 2 5 4.5S49 39 46 39h-4"/>
+      <ellipse cx="28" cy="51" rx="18" ry="3"/>
+      <!-- "S" monogram on cup -->
+      <path d="M32 31c-2-1-6-1-6 2c0 2 4 2 6 3c2 1 2 3 0 4c-2 1-6 0-6-1" stroke-width="1.8"/>
+      <!-- Crown/laurel -->
+      <path d="M22 20c2-4 4-5 6-5c2 0 4 1 6 5" stroke-width="1.5"/>
+      <circle cx="28" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+      <path d="M24 16l-2-3" stroke-width="1.2"/>
+      <path d="M32 16l2-3" stroke-width="1.2"/>
+      <!-- Steam -->
+      <path d="M28 8c0-3 2-3 2 0" stroke-width="1"/>
+    </g>
+  </symbol>
+
+  <!-- 18. Ginger Lemon Tea — cup with ginger root + lemon half -->
+  <symbol id="icon-ginger-lemon-tea" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 28h22v14c0 4-5 7-11 7s-11-3-11-7V28z"/>
+      <ellipse cx="29" cy="49" rx="14" ry="2.5"/>
+      <path d="M26 24c0-3 2-3 2 0"/>
+      <path d="M32 22c0-3 2-3 2 0"/>
+      <!-- Ginger root -->
+      <path d="M6 34c2-1 4 0 5 2c1 2 0 4 2 5c2 1 4-1 4 1c0 2-2 4-4 3c-2-1-3 0-5-1c-2-1-3-3-2-5c1-2 0-4 0-5" stroke-width="1.3"/>
+      <!-- Lemon half -->
+      <path d="M48 34a8 8 0 0 1 0 16" stroke-width="1.3"/>
+      <line x1="48" y1="34" x2="48" y2="50"/>
+      <path d="M48 38l6 2" stroke-width="0.8"/>
+      <path d="M48 42l7 0" stroke-width="0.8"/>
+      <path d="M48 46l6-2" stroke-width="0.8"/>
+    </g>
+  </symbol>
+
+  <!-- 19. Hazelnut Coffee — steaming cup with hazelnuts at base -->
+  <symbol id="icon-hazelnut-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 26h24v16c0 4-5 8-12 8s-12-4-12-8V26z"/>
+      <path d="M40 30h4c2.5 0 4 2 4 4s-1.5 4-4 4h-4"/>
+      <ellipse cx="28" cy="50" rx="16" ry="2.5"/>
+      <!-- Steam -->
+      <path d="M24 20c-1-4 1-6 2-8" stroke-width="1.2"/>
+      <path d="M30 18c-1-4 1-6 2-8" stroke-width="1.2"/>
+      <path d="M36 20c-1-4 1-6 2-8" stroke-width="1.2"/>
+      <!-- Hazelnuts -->
+      <circle cx="10" cy="52" r="3.5" stroke-width="1.2"/>
+      <path d="M7 49c2-2 5-1 6 0" stroke-width="1"/>
+      <circle cx="18" cy="56" r="3" stroke-width="1.2"/>
+      <path d="M15.5 53c2-1.5 4.5 0 5 0" stroke-width="1"/>
+      <circle cx="48" cy="54" r="3" stroke-width="1.2"/>
+      <path d="M46 51c2-1.5 4 0 4 0" stroke-width="1"/>
+    </g>
+  </symbol>
+
+  <!-- 20. Matcha Latte — wide bowl + chasen whisk -->
+  <symbol id="icon-matcha-latte" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Wide Japanese bowl -->
+      <path d="M10 28h32v10c0 5-7 9-16 9s-16-4-16-9V28z"/>
+      <ellipse cx="26" cy="28" rx="16" ry="4"/>
+      <!-- Matcha surface with foam art -->
+      <circle cx="26" cy="30" r="1" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="22" cy="32" r="0.7" fill="currentColor" stroke="none" opacity="0.3"/>
+      <!-- Chasen (bamboo whisk) -->
+      <line x1="50" y1="14" x2="50" y2="32" stroke-width="1.6"/>
+      <path d="M46 32c0 4 2 8 4 10" stroke-width="1"/>
+      <path d="M48 32c0 3 1 7 2 9" stroke-width="1"/>
+      <path d="M50 32c0 3 0 7 0 10" stroke-width="1"/>
+      <path d="M52 32c0 3-1 7-2 9" stroke-width="1"/>
+      <path d="M54 32c0 4-2 8-4 10" stroke-width="1"/>
+      <!-- Matcha powder -->
+      <circle cx="8" cy="48" r="0.8" fill="currentColor" stroke="none" opacity="0.4"/>
+      <circle cx="6" cy="52" r="0.6" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="10" cy="50" r="0.5" fill="currentColor" stroke="none" opacity="0.3"/>
+    </g>
+  </symbol>
+
+  <!-- 21. Black Tea — simple elegant teacup, dark liquid, leaf -->
+  <symbol id="icon-black-tea" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 26h28v16c0 5-6 9-14 9s-14-4-14-9V26z"/>
+      <path d="M42 30h5c3 0 5 2 5 4.5S50 39 47 39h-5"/>
+      <ellipse cx="28" cy="51" rx="18" ry="3"/>
+      <!-- Dark liquid visible -->
+      <path d="M18 32h24" stroke-width="1" opacity="0.3"/>
+      <!-- Tea leaf floating -->
+      <path d="M26 34c2-2 6-1 6 2c0 2-4 2-6 0" stroke-width="1.1" fill="currentColor" opacity="0.2"/>
+      <line x1="29" y1="33" x2="29" y2="37" stroke-width="0.7" opacity="0.4"/>
+      <!-- Single elegant steam -->
+      <path d="M28 20c-2-4 0-8 2-10" stroke-width="1.3"/>
+    </g>
+  </symbol>
+
+  <!-- 22. Black Coffee — minimalist cup, dark fill, strong steam -->
+  <symbol id="icon-black-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 28h28v14c0 5-6 8-14 8s-14-3-14-8V28z"/>
+      <!-- Dark coffee fill -->
+      <path d="M18 34h24" stroke-width="8" opacity="0.12"/>
+      <path d="M19 40h22" stroke-width="6" opacity="0.08"/>
+      <!-- Strong steam curls -->
+      <path d="M24 22c-2-5 0-9 3-13" stroke-width="1.5"/>
+      <path d="M30 20c-2-5 0-10 3-14" stroke-width="1.5"/>
+      <path d="M36 22c-2-5 0-9 3-13" stroke-width="1.5"/>
+    </g>
+  </symbol>
+
+  <!-- 23. Mango Smoothie — glass with mango slice + leaf -->
+  <symbol id="icon-mango-smoothie" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 16h24l-3 38H23L20 16z"/>
+      <line x1="18" y1="16" x2="46" y2="16" stroke-width="1.5"/>
+      <line x1="36" y1="8" x2="34" y2="54"/>
+      <!-- Blended texture waves -->
+      <path d="M23 28c4-2 8 2 12-1c4-3 6 1 6 1" stroke-width="1" opacity="0.4"/>
+      <path d="M23 36c3-2 7 1 10-1" stroke-width="0.8" opacity="0.3"/>
+      <!-- Mango slice on rim -->
+      <path d="M42 14c4-2 10 0 10 6c0 4-4 6-8 4" stroke-width="1.3"/>
+      <path d="M44 16c2 0 5 1 5 4" stroke-width="0.8"/>
+      <!-- Leaf garnish -->
+      <path d="M48 10c2-4 6-4 6 0c0 3-4 4-6 2" stroke-width="1.2" fill="currentColor" opacity="0.15"/>
+      <line x1="48" y1="10" x2="52" y2="8" stroke-width="0.8"/>
+    </g>
+  </symbol>
+
+  <!-- 24. Mixed Berry Smoothie — glass with berry cluster -->
+  <symbol id="icon-berry-smoothie" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 16h24l-3 38H23L20 16z"/>
+      <line x1="18" y1="16" x2="46" y2="16" stroke-width="1.5"/>
+      <line x1="37" y1="8" x2="35" y2="54"/>
+      <!-- Berry texture -->
+      <path d="M24 30c3-1 6 1 10-1c3-2 5 1 5 1" stroke-width="1" opacity="0.4"/>
+      <!-- Strawberry -->
+      <path d="M6 36c0-4 3-7 5-7c2 0 5 3 5 7c0 4-2 6-5 6s-5-2-5-6" stroke-width="1.2"/>
+      <path d="M8 33c2-2 4-2 6 0" stroke-width="0.8"/>
+      <circle cx="9" cy="38" r="0.5" fill="currentColor" stroke="none"/>
+      <circle cx="11" cy="40" r="0.5" fill="currentColor" stroke="none"/>
+      <circle cx="9" cy="42" r="0.5" fill="currentColor" stroke="none"/>
+      <!-- Blueberry cluster -->
+      <circle cx="52" cy="40" r="3" stroke-width="1.2"/>
+      <circle cx="56" cy="44" r="2.5" stroke-width="1.2"/>
+      <circle cx="50" cy="45" r="2.5" stroke-width="1.2"/>
+    </g>
+  </symbol>
+
+  <!-- 25. Banana Peanut Butter — glass with banana + peanut shells -->
+  <symbol id="icon-banana-pb" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 18h20l-2 34H24L22 18z"/>
+      <line x1="20" y1="18" x2="44" y2="18" stroke-width="1.5"/>
+      <line x1="36" y1="10" x2="34" y2="52"/>
+      <!-- Banana -->
+      <path d="M6 28c0-2 2-6 8-8c4 0 6 4 4 10c-2 6-8 10-10 8c-2-2-2-8-2-10" stroke-width="1.3"/>
+      <path d="M14 20c0-2-1-4-3-4" stroke-width="1"/>
+      <!-- Peanut shells -->
+      <ellipse cx="52" cy="40" rx="4" ry="6" stroke-width="1.2"/>
+      <path d="M48 40h8" stroke-width="0.8" opacity="0.5"/>
+      <ellipse cx="54" cy="50" rx="3" ry="4" stroke-width="1.1"/>
+    </g>
+  </symbol>
+
+  <!-- 26. Hot Chocolate — mug with marshmallows + cocoa dusting -->
+  <symbol id="icon-hot-chocolate" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Mug -->
+      <path d="M12 22h28v22c0 4-6 7-14 7s-14-3-14-7V22z"/>
+      <path d="M40 26h5c3 0 5 2 5 5s-2 5-5 5h-5"/>
+      <!-- Marshmallows floating -->
+      <ellipse cx="22" cy="24" rx="4" ry="3" stroke-width="1.2"/>
+      <ellipse cx="30" cy="25" rx="3.5" ry="2.5" stroke-width="1.2"/>
+      <ellipse cx="36" cy="24" rx="3" ry="2.5" stroke-width="1.2"/>
+      <!-- Cocoa powder dusting dots -->
+      <circle cx="20" cy="20" r="0.6" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="25" cy="18" r="0.5" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="30" cy="19" r="0.6" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="35" cy="20" r="0.5" fill="currentColor" stroke="none" opacity="0.3"/>
+      <!-- Steam -->
+      <path d="M22 16c-1-3 1-5 2-7" stroke-width="1.2"/>
+      <path d="M30 14c-1-3 1-5 2-7" stroke-width="1.2"/>
+    </g>
+  </symbol>
+
+  <!-- 27. Premium Cold Coffee — fancy stemmed glass, whipped cream, cherry -->
+  <symbol id="icon-premium-cold-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Stemmed glass -->
+      <path d="M18 14h28l-6 28h-16L18 14z"/>
+      <line x1="16" y1="14" x2="48" y2="14" stroke-width="1.5"/>
+      <!-- Stem -->
+      <line x1="32" y1="42" x2="32" y2="50"/>
+      <!-- Base -->
+      <ellipse cx="32" cy="52" rx="10" ry="3"/>
+      <!-- Whipped cream -->
+      <path d="M22 14c2-5 6-7 10-7c4 0 8 2 10 7" stroke-width="1.3"/>
+      <!-- Cherry on top -->
+      <circle cx="32" cy="6" r="3" fill="currentColor" opacity="0.15" stroke-width="1.3"/>
+      <path d="M32 3c2-2 4-2 5 0" stroke-width="1"/>
+      <!-- Ice cubes -->
+      <rect x="24" y="24" width="5" height="4" rx="1" stroke-width="1"/>
+      <rect x="32" y="28" width="5" height="4" rx="1" stroke-width="1"/>
+    </g>
+  </symbol>
+
+  <!-- 28. Irish Cold Coffee — stemmed heat-proof glass, cream layer -->
+  <symbol id="icon-irish-cold-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Irish coffee glass (heat-proof, stemmed) -->
+      <path d="M20 12h24l-4 32h-16L20 12z"/>
+      <line x1="18" y1="12" x2="46" y2="12" stroke-width="1.6"/>
+      <!-- Stem + base -->
+      <line x1="32" y1="44" x2="32" y2="50"/>
+      <ellipse cx="32" cy="52" rx="10" ry="3"/>
+      <!-- Cream layer floating on top -->
+      <path d="M22 18h20" stroke-width="2.5" opacity="0.3"/>
+      <!-- Coffee layers below -->
+      <path d="M23 26h18" stroke-width="0.8" opacity="0.2"/>
+      <path d="M24 32h16" stroke-width="0.8" opacity="0.3"/>
+      <!-- Handle -->
+      <path d="M44 18c4 0 6 3 6 7c0 4-2 7-6 7" stroke-width="1.3"/>
+    </g>
+  </symbol>
+
+  <!-- 29. Watermelon Mojito — glass with watermelon wedge + mint -->
+  <symbol id="icon-watermelon-mojito" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 16h24l-3 38H23L20 16z"/>
+      <line x1="18" y1="16" x2="46" y2="16" stroke-width="1.5"/>
+      <line x1="37" y1="8" x2="35" y2="54"/>
+      <!-- Watermelon wedge on rim -->
+      <path d="M6 12c0 0 8-6 16 0L6 12z" stroke-width="1.3"/>
+      <path d="M8 10h12" stroke-width="2" opacity="0.2"/>
+      <!-- Seeds -->
+      <ellipse cx="10" cy="10" rx="0.8" ry="1.2" fill="currentColor" stroke="none" transform="rotate(-20 10 10)"/>
+      <ellipse cx="14" cy="11" rx="0.8" ry="1.2" fill="currentColor" stroke="none" transform="rotate(15 14 11)"/>
+      <ellipse cx="18" cy="10" rx="0.8" ry="1.2" fill="currentColor" stroke="none" transform="rotate(-10 18 10)"/>
+      <!-- Mint sprig -->
+      <path d="M42 10c2-3 4-4 4-2c0 2-2 3-4 4" stroke-width="1.1" fill="currentColor" opacity="0.15"/>
+      <path d="M44 8c1-3 3-3 3-1c0 2-2 3-3 3" stroke-width="1.1" fill="currentColor" opacity="0.15"/>
+      <line x1="43" y1="12" x2="44" y2="6" stroke-width="0.8"/>
+    </g>
+  </symbol>
+
+  <!-- 30. Extra Espresso Shot — shot glass + "+" + lightning -->
+  <symbol id="icon-espresso-shot" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Small shot glass -->
+      <path d="M22 24h20l-2 22H24L22 24z"/>
+      <line x1="20" y1="24" x2="44" y2="24" stroke-width="1.5"/>
+      <!-- Dark liquid -->
+      <path d="M24 32h16" stroke-width="4" opacity="0.15"/>
+      <!-- "+" symbol -->
+      <line x1="10" y1="32" x2="10" y2="44" stroke-width="2"/>
+      <line x1="4" y1="38" x2="16" y2="38" stroke-width="2"/>
+      <!-- Lightning bolt -->
+      <path d="M50 18l-4 10h6l-4 12" stroke-width="2"/>
+      <path d="M52 40l-1-3" stroke-width="1.5"/>
+    </g>
+  </symbol>
+
+  <!-- 31. Oat Milk Swap — milk pitcher with oat stalks -->
+  <symbol id="icon-oat-milk" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Milk pitcher -->
+      <path d="M20 20h20v26c0 3-4 5-10 5s-10-2-10-5V20z"/>
+      <path d="M20 20c-2-2-4-2-4 2" stroke-width="1.3"/>
+      <path d="M20 24c-2-2-4-2-4 2" stroke-width="1"/>
+      <!-- Pour spout -->
+      <path d="M40 20c2-2 4-1 4 2" stroke-width="1.3"/>
+      <!-- Oat grain stalks -->
+      <line x1="50" y1="48" x2="50" y2="22" stroke-width="1.3"/>
+      <ellipse cx="50" cy="20" rx="2" ry="4" stroke-width="1.1"/>
+      <ellipse cx="48" cy="24" rx="2" ry="3.5" stroke-width="1.1" transform="rotate(-15 48 24)"/>
+      <ellipse cx="52" cy="24" rx="2" ry="3.5" stroke-width="1.1" transform="rotate(15 52 24)"/>
+      <line x1="54" y1="50" x2="54" y2="26" stroke-width="1.1"/>
+      <ellipse cx="54" cy="24" rx="1.5" ry="3" stroke-width="1"/>
+    </g>
+  </symbol>
+
+  <!-- 32. Veg Club Sandwich — triple-decker with toothpick flag -->
+  <symbol id="icon-veg-club" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Top bread -->
+      <path d="M8 20c12-4 24-4 48 0l-2 4H10L8 20z" stroke-width="1.3"/>
+      <!-- Lettuce -->
+      <path d="M10 26c4-2 8 1 12-1c4-2 8 1 12-1c4-2 8 1 12-1c3-1 5 0 6 1" stroke-width="1.2"/>
+      <!-- Middle bread -->
+      <rect x="10" y="28" width="44" height="3" rx="1.5"/>
+      <!-- Tomato layer -->
+      <rect x="12" y="33" width="40" height="3" rx="1"/>
+      <!-- Filling dots -->
+      <circle cx="18" cy="34.5" r="0.8" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="26" cy="34.5" r="0.8" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="34" cy="34.5" r="0.8" fill="currentColor" stroke="none" opacity="0.3"/>
+      <circle cx="42" cy="34.5" r="0.8" fill="currentColor" stroke="none" opacity="0.3"/>
+      <!-- Bottom bread -->
+      <path d="M10 38h44l2 4c-12 4-24 4-48 0L10 38z" stroke-width="1.3"/>
+      <!-- Toothpick flag -->
+      <line x1="32" y1="18" x2="32" y2="6" stroke-width="1.5"/>
+      <path d="M32 6h8l-4 4h-4" fill="currentColor" opacity="0.15" stroke-width="1"/>
+    </g>
+  </symbol>
+
+  <!-- 33. Paneer Tikka Sandwich — grilled sandwich with char marks -->
+  <symbol id="icon-paneer-tikka" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Top bread with char marks -->
+      <path d="M10 22h44l-2 4H12L10 22z" stroke-width="1.3"/>
+      <line x1="18" y1="23" x2="22" y2="25" stroke-width="1.5" opacity="0.4"/>
+      <line x1="28" y1="23" x2="32" y2="25" stroke-width="1.5" opacity="0.4"/>
+      <line x1="38" y1="23" x2="42" y2="25" stroke-width="1.5" opacity="0.4"/>
+      <!-- Paneer + filling -->
+      <rect x="14" y="28" width="36" height="6" rx="1"/>
+      <rect x="18" y="29" width="5" height="4" rx="1" stroke-width="1" opacity="0.5"/>
+      <rect x="26" y="29" width="5" height="4" rx="1" stroke-width="1" opacity="0.5"/>
+      <rect x="34" y="29" width="5" height="4" rx="1" stroke-width="1" opacity="0.5"/>
+      <!-- Bottom bread -->
+      <path d="M12 36h40l2 4H10L12 36z" stroke-width="1.3"/>
+      <!-- Chutney drizzle -->
+      <path d="M50 30c3 0 5 2 5 5c0 3-2 5-5 5" stroke-width="1.2" opacity="0.5"/>
+      <circle cx="52" cy="42" r="1" fill="currentColor" stroke="none" opacity="0.3"/>
+    </g>
+  </symbol>
+
+  <!-- 34. Avocado Toast — sourdough with smashed avo + microgreens -->
+  <symbol id="icon-avocado-toast" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Sourdough slice -->
+      <path d="M10 32c0-4 4-8 22-8c18 0 22 4 22 8v6c0 4-4 8-22 8c-18 0-22-4-22-8V32z"/>
+      <!-- Sourdough bubbles -->
+      <circle cx="16" cy="38" r="1.5" stroke-width="0.7" opacity="0.3"/>
+      <circle cx="48" cy="36" r="1.2" stroke-width="0.7" opacity="0.3"/>
+      <!-- Smashed avocado mound -->
+      <path d="M16 30c4-6 12-8 16-8c4 0 12 2 16 8" stroke-width="1.3"/>
+      <path d="M20 28c3-2 8-3 12-3c4 0 9 1 12 3" stroke-width="0.8" opacity="0.4"/>
+      <!-- Microgreens -->
+      <path d="M24 22c-1-3 0-5 1-5c1 0 1 3 0 5" stroke-width="1" opacity="0.5"/>
+      <path d="M28 20c-1-3 0-5 1-5c1 0 1 3 0 5" stroke-width="1" opacity="0.5"/>
+      <path d="M32 21c-1-3 0-5 1-5c1 0 1 3 0 5" stroke-width="1" opacity="0.5"/>
+      <path d="M36 22c-1-3 0-5 1-5c1 0 1 3 0 5" stroke-width="1" opacity="0.5"/>
+      <!-- Chili flakes dots -->
+      <circle cx="22" cy="26" r="0.6" fill="currentColor" stroke="none" opacity="0.5"/>
+      <circle cx="30" cy="24" r="0.5" fill="currentColor" stroke="none" opacity="0.5"/>
+      <circle cx="38" cy="25" r="0.6" fill="currentColor" stroke="none" opacity="0.5"/>
+    </g>
+  </symbol>
+
+  <!-- 35. Banana Walnut Muffin — muffin in wrapper with banana + walnut -->
+  <symbol id="icon-banana-muffin" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Muffin dome -->
+      <path d="M16 30c0-14 8-20 16-20c8 0 16 6 16 20"/>
+      <!-- Paper wrapper -->
+      <path d="M12 30h40v18H12z"/>
+      <line x1="20" y1="30" x2="20" y2="48" stroke-width="0.7" opacity="0.3"/>
+      <line x1="28" y1="30" x2="28" y2="48" stroke-width="0.7" opacity="0.3"/>
+      <line x1="36" y1="30" x2="36" y2="48" stroke-width="0.7" opacity="0.3"/>
+      <line x1="44" y1="30" x2="44" y2="48" stroke-width="0.7" opacity="0.3"/>
+      <!-- Banana slice on top -->
+      <ellipse cx="28" cy="18" rx="4" ry="2.5" stroke-width="1.2"/>
+      <circle cx="28" cy="18" r="1" stroke-width="0.6" opacity="0.3"/>
+      <!-- Walnut on top -->
+      <path d="M36 16c-1-3 1-5 3-5c2 0 4 2 3 5c-1 3-5 3-6 0" stroke-width="1.2"/>
+      <line x1="37.5" y1="13" x2="37.5" y2="18" stroke-width="0.6" opacity="0.4"/>
+    </g>
+  </symbol>
+
+  <!-- 36. Chocolate Brownie — dense brownie with cracked top -->
+  <symbol id="icon-brownie" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Brownie block -->
+      <rect x="12" y="22" width="40" height="24" rx="3"/>
+      <!-- Cracked top surface -->
+      <path d="M16 26c4 2 8-1 12 1c4 2 8-1 12 1c3 1 6 0 8 1" stroke-width="1.2"/>
+      <path d="M20 30c6 1 10-1 14 0c4 1 8 0 10 1" stroke-width="0.8" opacity="0.5"/>
+      <!-- Texture cracks -->
+      <path d="M24 34l3 4" stroke-width="0.8" opacity="0.4"/>
+      <path d="M36 32l2 6" stroke-width="0.8" opacity="0.4"/>
+      <!-- Chocolate drip on side -->
+      <path d="M50 30c2 0 3 3 2 6c-1 3-2 4-2 6" stroke-width="1.3" opacity="0.5"/>
+      <!-- Fudge shine -->
+      <path d="M18 24c2-1 4 0 4 0" stroke-width="1" opacity="0.3"/>
+    </g>
+  </symbol>
+
+  <!-- 37. Butter Croissant — flaky with layered curves + butter pat -->
+  <symbol id="icon-croissant" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Croissant shape -->
+      <path d="M8 38c4-6 10-16 18-18c4-1 6 2 6 6c0 4-2 8-6 10c-4 2-8 4-10 6c-2 2-2 4 0 4c4 0 14-4 22-6c4-1 8 0 10 2c2 2 2 6-2 8c-4 2-14 4-24 4c-10 0-16-4-14-16" stroke-width="1.5"/>
+      <!-- Flaky layers -->
+      <path d="M18 30c4-4 10-8 14-8" stroke-width="0.8" opacity="0.4"/>
+      <path d="M14 36c6-4 14-8 22-8" stroke-width="0.8" opacity="0.4"/>
+      <path d="M16 42c8-4 18-6 26-6" stroke-width="0.8" opacity="0.4"/>
+      <!-- Butter pat -->
+      <rect x="48" y="44" width="8" height="6" rx="1.5" stroke-width="1.2"/>
+      <path d="M50 44c2-1 4-1 4 0" stroke-width="0.8" opacity="0.4"/>
+    </g>
+  </symbol>
+
+  <!-- 38. Flavour Syrup — syrup bottle with drip + sparkle -->
+  <symbol id="icon-flavour-syrup" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Bottle body -->
+      <rect x="20" y="24" width="24" height="28" rx="4"/>
+      <!-- Bottle neck -->
+      <rect x="26" y="14" width="12" height="10" rx="2"/>
+      <!-- Cap -->
+      <rect x="24" y="10" width="16" height="4" rx="2" stroke-width="1.5"/>
+      <!-- Label -->
+      <rect x="24" y="30" width="16" height="12" rx="2" stroke-width="1" opacity="0.4"/>
+      <!-- Drip -->
+      <path d="M28 52c0 3 2 5 4 5c2 0 4-2 4-5" stroke-width="1.3" opacity="0.5"/>
+      <circle cx="32" cy="58" r="1.5" fill="currentColor" stroke="none" opacity="0.3"/>
+      <!-- Sparkle accent -->
+      <line x1="48" y1="18" x2="48" y2="24" stroke-width="1.5"/>
+      <line x1="45" y1="21" x2="51" y2="21" stroke-width="1.5"/>
+      <line x1="10" y1="30" x2="10" y2="34" stroke-width="1.2"/>
+      <line x1="8" y1="32" x2="12" y2="32" stroke-width="1.2"/>
+    </g>
   </symbol>
 
 </svg>

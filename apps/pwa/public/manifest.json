@@ -4,8 +4,8 @@
   "description": "Order your coffee and bites in seconds",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF3EB",
-  "theme_color": "#FAF3EB",
+  "background_color": "#E8DCC8",
+  "theme_color": "#E8DCC8",
   "orientation": "portrait",
   "icons": [
     {

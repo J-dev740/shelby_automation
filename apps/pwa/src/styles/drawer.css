@@ -78,19 +78,33 @@
   color: var(--color-text-muted);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-spring);
 }
 .drawer__toggle-btn svg {
   width: 20px;
   height: 20px;
+  transition: transform var(--duration-normal) var(--ease-spring);
 }
 .drawer__toggle-btn.active {
   border-color: var(--color-accent);
-  background: var(--color-bg-secondary);
-  color: var(--color-accent);
+  background: var(--color-accent);
+  color: white;
+}
+/* Icon spring-pops when becoming active */
+.drawer__toggle-btn.active svg {
+  animation: iconBounce 350ms var(--ease-spring) forwards;
+}
+@keyframes iconBounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
 }
 .drawer__toggle-btn:active {
-  transform: scale(0.9);
+  transform: scale(0.88);
 }
 
 /* Item grid — 2-row horizontal scroll */
@@ -121,10 +135,21 @@
   border: 1px solid var(--color-border);
   position: relative;
   scroll-snap-align: start;
-  transition: transform var(--duration-fast) var(--ease-spring);
+  transition: transform var(--duration-fast) var(--ease-spring),
+              box-shadow var(--duration-fast) var(--ease-out);
+  overflow: hidden;
 }
 .item-card:active {
   transform: scale(0.96);
+}
+/* Warm glow flash on add — triggered via JS class */
+.item-card.item-added {
+  animation: cardGlow 350ms var(--ease-out) forwards;
+}
+@keyframes cardGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(199, 131, 90, 0); }
+  30%  { box-shadow: 0 0 0 6px rgba(199, 131, 90, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(199, 131, 90, 0); }
 }
 
 .item-card__icon {
@@ -168,24 +193,49 @@
   color: white;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: all var(--duration-fast) var(--ease-spring);
+  transition: background var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-spring);
+  overflow: hidden;
+  /* Ripple layer */
+  isolation: isolate;
 }
 .item-card__add svg {
   width: 14px;
   height: 14px;
+  pointer-events: none;
+  flex-shrink: 0;
 }
 .item-card__add:active {
   transform: scale(1.15);
   background: var(--color-accent-hover);
 }
-.item-card__add.added {
-  animation: addBounce var(--duration-normal) var(--ease-spring);
+/* Ripple pseudo-element */
+.item-card__add::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
 }
-
-@keyframes addBounce {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.3); }
-  100% { transform: scale(1); }
+.item-card__add.added {
+  background: var(--color-success);
+  animation: addPop var(--duration-slow) var(--ease-spring) forwards;
+}
+.item-card__add.added::after {
+  animation: rippleBurst 400ms var(--ease-out) forwards;
+}
+@keyframes addPop {
+  0%   { transform: scale(1); background: var(--color-accent); }
+  25%  { transform: scale(1.35); background: var(--color-success); }
+  60%  { transform: scale(0.95); }
+  100% { transform: scale(1); background: var(--color-accent); }
+}
+@keyframes rippleBurst {
+  0%   { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
 }
 
 /* Side drawer for order details */

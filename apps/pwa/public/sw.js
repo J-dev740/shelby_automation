@@ -1,9 +1,11 @@
-const CACHE_NAME = 'shelby-v1';
+const CACHE_NAME = 'shelby-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/menu-sprite.svg',
 ];
+
 
 // Install — cache static shell
 self.addEventListener('install', (event) => {

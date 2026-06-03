@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+
+  <!-- Cold Coffee: iced cup with straw + condensation drops -->
+  <symbol id="icon-cold-coffee" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 20h32l-4 32H20L16 20z"/>
+    <path d="M12 20h40"/>
+    <!-- Straw -->
+    <line x1="38" y1="10" x2="34" y2="52"/>
+    <!-- Ice cubes -->
+    <rect x="22" y="30" width="8" height="8" rx="2"/>
+    <rect x="33" y="34" width="7" height="7" rx="2"/>
+    <!-- Condensation drops -->
+    <circle cx="13" cy="32" r="1.5" fill="currentColor" stroke="none"/>
+    <circle cx="11" cy="40" r="1" fill="currentColor" stroke="none"/>
+    <circle cx="52" cy="28" r="1.2" fill="currentColor" stroke="none"/>
+  </symbol>
+
+  <!-- Hot Coffee: cup with saucer + two steam curls -->
+  <symbol id="icon-hot-coffee" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 28h24v18c0 4-5 7-12 7s-12-3-12-7V28z"/>
+    <path d="M40 32h5c3 0 5 2 5 5s-2 5-5 5h-5"/>
+    <!-- Saucer -->
+    <ellipse cx="28" cy="53" rx="18" ry="3"/>
+    <!-- Steam curls -->
+    <path d="M22 22 Q20 18 22 14 Q24 10 22 6"/>
+    <path d="M30 20 Q28 16 30 12 Q32 8 30 4"/>
+    <path d="M38 22 Q36 18 38 14 Q40 10 38 6"/>
+  </symbol>
+
+  <!-- Tea: teacup with teabag string + tag -->
+  <symbol id="icon-tea" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 24h28v18c0 5-6 9-14 9s-14-4-14-9V24z"/>
+    <path d="M42 28h4c3 0 5 2 5 4s-2 4-5 4h-4"/>
+    <!-- Saucer -->
+    <ellipse cx="28" cy="51" rx="20" ry="3.5"/>
+    <!-- Teabag string -->
+    <line x1="28" y1="14" x2="28" y2="36"/>
+    <!-- Teabag tag -->
+    <rect x="22" y="8" width="12" height="8" rx="2"/>
+    <!-- Knot -->
+    <circle cx="28" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+  </symbol>
+
+  <!-- Smoothie: tall glass with layered waves + straw -->
+  <symbol id="icon-smoothie" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 16h28l-4 40H22L18 16z"/>
+    <line x1="18" y1="16" x2="46" y2="16"/>
+    <!-- Layered smoothie waves -->
+    <path d="M20 28 Q28 24 36 28 Q44 32 52 28" stroke-width="1.2" opacity="0.7"/>
+    <path d="M20 38 Q28 34 36 38 Q44 42 52 38" stroke-width="1.2" opacity="0.5"/>
+    <!-- Straw -->
+    <line x1="40" y1="8" x2="37" y2="56"/>
+    <!-- Lid rim -->
+    <path d="M16 16 Q32 12 48 16" stroke-width="1.2"/>
+  </symbol>
+
+  <!-- Sandwich: two bread slices with visible filling layers -->
+  <symbol id="icon-sandwich" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top bread -->
+    <path d="M10 22 Q32 14 54 22 L52 28 Q32 20 12 28Z"/>
+    <!-- Lettuce -->
+    <path d="M12 30 Q20 26 28 30 Q36 34 44 30 Q50 27 52 30" stroke-width="1.2"/>
+    <!-- Tomato layer -->
+    <rect x="14" y="32" width="36" height="4" rx="2"/>
+    <!-- Cheese -->
+    <path d="M12 38 L52 38 L54 42 L10 42Z" stroke-width="1.2"/>
+    <!-- Bottom bread -->
+    <path d="M10 42 L54 42 L52 50 Q32 56 12 50Z"/>
+  </symbol>
+
+  <!-- Bakery: muffin with domed top in a ridged wrapper -->
+  <symbol id="icon-bakery" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Muffin dome -->
+    <path d="M18 32 Q18 10 32 10 Q46 10 46 32"/>
+    <!-- Wrapper body -->
+    <path d="M14 32h36v18H14z" rx="2"/>
+    <!-- Wrapper ridges -->
+    <line x1="22" y1="32" x2="22" y2="50"/>
+    <line x1="30" y1="32" x2="30" y2="50"/>
+    <line x1="38" y1="32" x2="38" y2="50"/>
+    <line x1="46" y1="32" x2="46" y2="50"/>
+    <!-- Sprinkle on top -->
+    <line x1="26" y1="18" x2="29" y2="15" stroke-width="2" stroke-linecap="round"/>
+    <line x1="36" y1="15" x2="33" y2="19" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Dessert: stack of brownie squares -->
+  <symbol id="icon-dessert" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Bottom layer -->
+    <rect x="10" y="46" width="44" height="10" rx="3"/>
+    <!-- Middle layer -->
+    <rect x="14" y="34" width="36" height="12" rx="3"/>
+    <!-- Top layer -->
+    <rect x="18" y="22" width="28" height="12" rx="3"/>
+    <!-- Drizzle lines on top layer -->
+    <path d="M22 26 Q28 22 34 26 Q40 30 44 26" stroke-width="1.2" opacity="0.8"/>
+    <!-- Crack texture on middle -->
+    <path d="M18 40 Q26 37 32 40 Q38 43 46 40" stroke-width="1" opacity="0.5"/>
+  </symbol>
+
+  <!-- Add-on / Extra: plus inside a sparkle circle -->
+  <symbol id="icon-addon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="32" cy="32" r="20"/>
+    <line x1="32" y1="22" x2="32" y2="42"/>
+    <line x1="22" y1="32" x2="42" y2="32"/>
+    <!-- Small sparkle accents -->
+    <line x1="50" y1="14" x2="50" y2="18"/>
+    <line x1="48" y1="16" x2="52" y2="16"/>
+    <line x1="14" y1="48" x2="14" y2="52"/>
+    <line x1="12" y1="50" x2="16" y2="50"/>
+  </symbol>
+
+  <!-- Mocktail: cocktail glass with citrus slice on rim -->
+  <symbol id="icon-mocktail" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Glass body -->
+    <path d="M14 12 L28 40 L28 54 L36 54 L36 40 L50 12Z"/>
+    <line x1="14" y1="12" x2="50" y2="12"/>
+    <line x1="24" y1="54" x2="40" y2="54"/>
+    <!-- Straw -->
+    <line x1="42" y1="12" x2="36" y2="54"/>
+    <!-- Citrus slice on rim -->
+    <circle cx="48" cy="18" r="8"/>
+    <line x1="48" y1="10" x2="48" y2="26"/>
+    <line x1="40" y1="14" x2="56" y2="22"/>
+    <line x1="40" y1="22" x2="56" y2="14"/>
+    <!-- Liquid line inside glass -->
+    <path d="M18 26 Q32 22 46 26" stroke-width="1" opacity="0.6"/>
+  </symbol>
+
+  <!-- Generic Sip (fallback): simple outlined cup -->
+  <symbol id="icon-sip" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22h32v24c0 6-6 10-16 10s-16-4-16-10V22z"/>
+    <path d="M44 28h6c4 0 6 3 6 6s-2 6-6 6h-6"/>
+    <path d="M20 14 Q20 10 24 10"/>
+    <path d="M28 12 Q28 6 32 6"/>
+    <path d="M36 14 Q36 10 40 10"/>
+  </symbol>
+
+  <!-- Generic Bite (fallback): plate with dome cloche -->
+  <symbol id="icon-bite" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="32" cy="50" rx="26" ry="5"/>
+    <path d="M6 50 Q6 24 32 24 Q58 24 58 50"/>
+    <ellipse cx="32" cy="50" rx="26" ry="5"/>
+    <line x1="6" y1="50" x2="58" y2="50"/>
+    <!-- Dome handle -->
+    <circle cx="32" cy="24" r="4"/>
+    <line x1="32" y1="24" x2="32" y2="20"/>
+  </symbol>
+
+</svg>

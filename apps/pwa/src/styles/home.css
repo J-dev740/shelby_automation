@@ -110,6 +110,51 @@
   border: 1px solid var(--color-border);
   flex-shrink: 0;
   transition: transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+/* Delete zone revealed behind the item as user swipes right */
+.home__cart-item-delete-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, var(--color-danger), #e87070);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  padding-left: var(--space-md);
+  gap: var(--space-sm);
+  color: white;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 60ms linear;
+  z-index: 0;
+}
+.home__cart-item-delete-bg svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  transition: transform 150ms var(--ease-spring);
+}
+/* Wobble when threshold is crossed */
+.home__cart-item-delete-bg.at-threshold svg {
+  animation: trashWobble 180ms var(--ease-spring) forwards;
+}
+@keyframes trashWobble {
+  0%   { transform: rotate(0deg) scale(1); }
+  30%  { transform: rotate(-12deg) scale(1.1); }
+  70%  { transform: rotate(10deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+/* Collapse animation on delete */
+.home__cart-item.collapsing {
+  animation: collapseItem 250ms var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes collapseItem {
+  0%   { max-height: 60px; opacity: 1; transform: translateX(0); }
+  100% { max-height: 0; opacity: 0; transform: translateX(80px); padding: 0; margin: 0; border: none; }
 }
 
 .home__cart-item-name {
@@ -145,11 +190,15 @@
   color: var(--color-accent);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-spring);
 }
 .qty-stepper__btn:active {
-  background: var(--color-bg-secondary);
-  transform: scale(0.9);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+  transform: scale(0.88);
 }
 .qty-stepper__btn svg {
   width: 14px;
@@ -162,6 +211,16 @@
   min-width: 20px;
   text-align: center;
   color: var(--color-text-primary);
+  display: inline-block;
+}
+/* Triggered by JS: number pops to show it changed */
+.qty-stepper__count.qty-pop {
+  animation: qtyPop 220ms var(--ease-spring) forwards;
+}
+@keyframes qtyPop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.45); color: var(--color-accent); }
+  100% { transform: scale(1); }
 }
 
 /* Sips & Bites hero components */
@@ -234,6 +293,13 @@
   overflow: hidden;
   display: flex;
   align-items: center;
+  transition: background 200ms var(--ease-out);
+}
+.confirmation-bar__track.track-confirmed {
+  background: rgba(124, 170, 110, 0.25);
+}
+.confirmation-bar__track.track-cleared {
+  background: rgba(194, 91, 78, 0.18);
 }
 
 .confirmation-bar__slider {

@@ -40,6 +40,10 @@ export function renderHome(): HTMLElement {
       for (const item of cart) {
         html += `
           <div class="home__cart-item" data-item-id="${item.itemId}">
+            <div class="home__cart-item-delete-bg" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Remove
+            </div>
             <span class="home__cart-item-name">${item.name}</span>
             <span class="home__cart-item-price">₹${item.price_inr * item.qty}</span>
             <div class="qty-stepper">
@@ -125,6 +129,15 @@ export function renderHome(): HTMLElement {
         const action = target.dataset.action!;
         if (action === 'inc') updateQty(id, 1);
         else updateQty(id, -1);
+        // Pop the qty count
+        const stepper = target.closest('.qty-stepper');
+        const countEl = stepper?.querySelector('.qty-stepper__count') as HTMLElement | null;
+        if (countEl) {
+          countEl.classList.remove('qty-pop');
+          void countEl.offsetWidth;
+          countEl.classList.add('qty-pop');
+          countEl.addEventListener('animationend', () => countEl.classList.remove('qty-pop'), { once: true });
+        }
       });
     });
 
@@ -143,30 +156,55 @@ export function renderHome(): HTMLElement {
     el.querySelectorAll('.home__cart-item').forEach(item => {
       let startX = 0;
       let currentX = 0;
+      let didCrossThreshold = false;
       const htmlItem = item as HTMLElement;
+      const deleteBg = htmlItem.querySelector('.home__cart-item-delete-bg') as HTMLElement | null;
+
       htmlItem.addEventListener('touchstart', (e: any) => {
         startX = e.touches[0].clientX;
+        currentX = 0;
+        didCrossThreshold = false;
         htmlItem.style.transition = 'none';
+        if (deleteBg) deleteBg.classList.remove('at-threshold');
       }, { passive: true });
       htmlItem.addEventListener('touchmove', (e: any) => {
         const deltaX = e.touches[0].clientX - startX;
-        // Only allow swiping right (deltaX > 0)
         currentX = Math.max(0, deltaX);
         htmlItem.style.transform = `translateX(${currentX}px)`;
-        htmlItem.style.opacity = String(1 - (currentX / 100));
+        htmlItem.style.opacity = String(Math.max(0.3, 1 - (currentX / 120)));
+        // Reveal delete bg proportionally
+        if (deleteBg) {
+          deleteBg.style.opacity = String(Math.min(1, currentX / 80));
+          // Wobble at threshold
+          if (currentX >= 80 && !didCrossThreshold) {
+            didCrossThreshold = true;
+            deleteBg.classList.add('at-threshold');
+            if (navigator.vibrate) navigator.vibrate(12);
+          } else if (currentX < 80 && didCrossThreshold) {
+            didCrossThreshold = false;
+            deleteBg.classList.remove('at-threshold');
+          }
+        }
       }, { passive: true });
       htmlItem.addEventListener('touchend', () => {
-        htmlItem.style.transition = 'transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out)';
         if (currentX > 80) {
-          htmlItem.style.transform = `translateX(100px)`;
-          htmlItem.style.opacity = '0';
+          // Collapse animation before removing
+          htmlItem.style.transition = '';
+          htmlItem.style.transform = '';
+          htmlItem.style.opacity = '';
+          htmlItem.classList.add('collapsing');
           if (navigator.vibrate) navigator.vibrate(20);
           setTimeout(() => {
             import('../lib/store.js').then(m => m.removeFromCart(htmlItem.dataset.itemId!));
-          }, 200);
+          }, 240);
         } else {
+          htmlItem.style.transition = 'transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out)';
           htmlItem.style.transform = '';
           htmlItem.style.opacity = '1';
+          if (deleteBg) {
+            deleteBg.style.opacity = '0';
+            deleteBg.classList.remove('at-threshold');
+          }
         }
         currentX = 0;
       });
@@ -249,20 +287,34 @@ function bindSlideGesture(bar: HTMLElement) {
     if (currentX >= threshold) {
       // Confirmed! Navigate to checkout
       thumb.style.transform = `translate(calc(-50% + ${halfTrack}px), 0)`;
+      thumb.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
       if (navigator.vibrate) navigator.vibrate(20);
+      // Flash track green + update label
+      const track = bar.querySelector('.confirmation-bar__track') as HTMLElement;
+      const textSpans = bar.querySelectorAll('.confirmation-bar__text span');
+      track?.classList.add('track-confirmed');
+      if (textSpans[1]) (textSpans[1] as HTMLElement).textContent = '✓ Confirmed!';
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('navigate', { detail: 'checkout' }));
         // Reset slider when navigating back
         setTimeout(() => {
           thumb.style.transform = 'translate(-50%, 0)';
           thumb.innerHTML = ICONS.chevronRight;
+          track?.classList.remove('track-confirmed');
+          if (textSpans[1]) (textSpans[1] as HTMLElement).textContent = 'Order →';
           currentX = 0;
         }, 300);
       }, 200);
     } else if (currentX <= -threshold) {
       // Empty cart!
       thumb.style.transform = `translate(calc(-50% - ${halfTrack}px), 0)`;
+      thumb.innerHTML = '✕';
       if (navigator.vibrate) navigator.vibrate(20);
+      // Flash track red + update label
+      const track = bar.querySelector('.confirmation-bar__track') as HTMLElement;
+      const textSpans = bar.querySelectorAll('.confirmation-bar__text span');
+      track?.classList.add('track-cleared');
+      if (textSpans[0]) (textSpans[0] as HTMLElement).textContent = 'Cleared';
       setTimeout(() => {
         import('../lib/store.js').then(m => m.clearCart());
       }, 200);

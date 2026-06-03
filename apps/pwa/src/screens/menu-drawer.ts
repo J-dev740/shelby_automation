@@ -2,6 +2,23 @@ import { ICONS } from '../assets/icons.js';
 import { store, subscribe, addToCart } from '../lib/store.js';
 import type { MenuItem } from '../lib/store.js';
 
+/** Maps a category name to its sprite symbol ID */
+function iconForCategory(categoryName: string): string {
+  const n = categoryName.toLowerCase();
+  if (n.includes('cold')) return 'icon-cold-coffee';
+  if (n.includes('hot') || n.includes('cappuccino') || n.includes('espresso') || n.includes('latte') || n.includes('flat') || n.includes('mocha') || n.includes('filter')) return 'icon-hot-coffee';
+  if (n.includes('tea') || n.includes('chai')) return 'icon-tea';
+  if (n.includes('smooth') || n.includes('blend')) return 'icon-smoothie';
+  if (n.includes('sandwich') || n.includes('toast') || n.includes('paneer') || n.includes('avocado') || n.includes('club')) return 'icon-sandwich';
+  if (n.includes('muffin') || n.includes('croissant') || n.includes('bak') || n.includes('cookie')) return 'icon-bakery';
+  if (n.includes('brownie') || n.includes('dessert') || n.includes('cake') || n.includes('chocolate')) return 'icon-dessert';
+  if (n.includes('mojito') || n.includes('mocktail') || n.includes('juice') || n.includes('watermelon')) return 'icon-mocktail';
+  if (n.includes('extra') || n.includes('add') || n.includes('syrup') || n.includes('shot') || n.includes('oat') || n.includes('flavour')) return 'icon-addon';
+  if (n.includes('milk coffee') || n.includes('black coffee') || n.includes('black tea') || n.includes('milk tea') || n.includes('special')) return 'icon-hot-coffee';
+  return 'icon-sip'; // fallback
+}
+
+
 let drawerEl: HTMLElement | null = null;
 let overlayEl: HTMLElement | null = null;
 let unsubscribe: (() => void) | null = null;
@@ -78,15 +95,18 @@ function renderDrawerContent() {
     <div class="drawer__items">
       ${items.map(item => `
         <div class="item-card" data-item-id="${item.id}">
-          <div class="item-card__icon">${type === 'sips' ? ICONS.coffee : ICONS.food}</div>
+          <div class="item-card__icon">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="/menu-sprite.svg#${iconForCategory(item.category_name)}"></use></svg>
+          </div>
           <span class="item-card__name">${item.name}</span>
-          <span class="item-card__price">₹${item.price_inr}</span>
+          <span class="item-card__price">&#x20B9;${item.price_inr}</span>
           <button class="item-card__add" data-item-id="${item.id}" aria-label="Add ${item.name}">${ICONS.plus}</button>
         </div>
       `).join('')}
-      ${items.length === 0 ? '<p style="padding: 2rem; color: var(--color-text-muted); text-align: center;">Menu is being updated ☕</p>' : ''}
+      ${items.length === 0 ? '<p style="padding: 2rem; color: var(--color-text-muted); text-align: center;">Menu is being updated &#x2615;</p>' : ''}
     </div>
   `;
+
 
   // Bind toggle buttons
   drawerEl.querySelectorAll('.drawer__toggle-btn').forEach(btn => {
@@ -94,6 +114,13 @@ function renderDrawerContent() {
       if (navigator.vibrate) navigator.vibrate(10);
       const newType = (btn as HTMLElement).dataset.type as 'sips' | 'bites';
       if (newType !== store.drawerType) {
+        // Fade the title text out then back in
+        const titleEl = drawerEl?.querySelector('.drawer__title') as HTMLElement | null;
+        if (titleEl) {
+          titleEl.style.transition = 'opacity 150ms ease';
+          titleEl.style.opacity = '0';
+          setTimeout(() => { titleEl.style.opacity = '1'; }, 160);
+        }
         store.drawerType = newType;
       }
     });
@@ -109,12 +136,23 @@ function renderDrawerContent() {
       const item = allItems.find(i => i.id === itemId);
       if (item) {
         addToCart(item);
-        // Bounce animation
+
+        // 1. Ripple burst + green flash on the + button
         btn.classList.remove('added');
         void btn.offsetWidth; // Force reflow
         btn.classList.add('added');
-        // Haptic feedback
-        if (navigator.vibrate) navigator.vibrate(10);
+        // Swap to checkmark while added class is active
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+        setTimeout(() => {
+          btn.classList.remove('added');
+          btn.innerHTML = originalHTML;
+        }, 500);
+
+        // 2. Warm glow pulse on the card itself
+        const cardEl = card as HTMLElement;
+        cardEl.classList.add('item-added');
+        setTimeout(() => cardEl.classList.remove('item-added'), 400);
       }
     };
 

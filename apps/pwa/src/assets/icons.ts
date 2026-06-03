@@ -75,4 +75,12 @@ export const ICONS = {
     <path d="M3 16c0-6 4-10 9-10s9 4 9 10"/>
     <line x1="12" y1="3" x2="12" y2="6"/>
   </svg>`,
+
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6l-1 14H6L5 6"/>
+    <path d="M10 11v6"/>
+    <path d="M14 11v6"/>
+    <path d="M9 6V4h6v2"/>
+  </svg>`,
 } as const;

@@ -74,18 +74,19 @@ export function renderHome(): HTMLElement {
       for (const item of cart) {
         html += `
           <div class="home__cart-item" data-item-id="${item.itemId}">
-            <div class="home__cart-item-delete-bg" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-              Remove
+            <div class="home__cart-item__name-zone">
+              <span class="home__cart-item-name">${item.name}</span>
             </div>
-            <span class="home__cart-item-name">${item.name}</span>
-            <div class="home__cart-item__right">
-              <span class="home__cart-item-price">&#x20B9;${item.price_inr * item.qty}</span>
+            <div class="home__cart-item__stepper-zone">
               <div class="qty-stepper">
                 <button class="qty-stepper__btn" data-action="dec" data-id="${item.itemId}">${ICONS.minus}</button>
                 <span class="qty-stepper__count">${item.qty}</span>
                 <button class="qty-stepper__btn" data-action="inc" data-id="${item.itemId}">${ICONS.plus}</button>
               </div>
+            </div>
+            <div class="home__cart-item__footer-zone">
+              <span class="home__cart-item-price">&#x20B9;${item.price_inr * item.qty}</span>
+              <button class="home__cart-item__delete" data-item-id="${item.itemId}" aria-label="Remove ${item.name}">${ICONS.trash}</button>
             </div>
           </div>`;
       }
@@ -229,60 +230,21 @@ function bindDynamicEvents(el: HTMLElement) {
     });
   });
 
-  // Swipe right to delete from cart
-  el.querySelectorAll('.home__cart-item').forEach(item => {
-    let startX = 0;
-    let currentX = 0;
-    let didCrossThreshold = false;
-    const htmlItem = item as HTMLElement;
-    const deleteBg = htmlItem.querySelector('.home__cart-item-delete-bg') as HTMLElement | null;
-
-    htmlItem.addEventListener('touchstart', (e: any) => {
-      startX = e.touches[0].clientX;
-      currentX = 0;
-      didCrossThreshold = false;
-      htmlItem.style.transition = 'none';
-      if (deleteBg) deleteBg.classList.remove('at-threshold');
-    }, { passive: true });
-
-    htmlItem.addEventListener('touchmove', (e: any) => {
-      const deltaX = e.touches[0].clientX - startX;
-      currentX = Math.max(0, deltaX);
-      htmlItem.style.transform = `translateX(${currentX}px)`;
-      htmlItem.style.opacity = String(Math.max(0.3, 1 - (currentX / 120)));
-      if (deleteBg) {
-        deleteBg.style.opacity = String(Math.min(1, currentX / 80));
-        if (currentX >= 80 && !didCrossThreshold) {
-          didCrossThreshold = true;
-          deleteBg.classList.add('at-threshold');
-          if (navigator.vibrate) navigator.vibrate(12);
-        } else if (currentX < 80 && didCrossThreshold) {
-          didCrossThreshold = false;
-          deleteBg.classList.remove('at-threshold');
-        }
-      }
-    }, { passive: true });
-
-    htmlItem.addEventListener('touchend', () => {
-      if (currentX > 80) {
-        htmlItem.style.transition = '';
-        htmlItem.style.transform = '';
-        htmlItem.style.opacity = '';
-        htmlItem.classList.add('collapsing');
-        if (navigator.vibrate) navigator.vibrate(20);
-        setTimeout(() => {
-          import('../lib/store.js').then(m => m.removeFromCart(htmlItem.dataset.itemId!));
-        }, 240);
+  // Cart item delete buttons
+  el.querySelectorAll('.home__cart-item__delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const itemId = (btn as HTMLElement).dataset.itemId!;
+      const card = btn.closest('.home__cart-item') as HTMLElement | null;
+      if (card) {
+        card.classList.add('collapsing-h');
+        if (navigator.vibrate) navigator.vibrate(15);
+        card.addEventListener('animationend', () => {
+          import('../lib/store.js').then(m => m.removeFromCart(itemId));
+        }, { once: true });
       } else {
-        htmlItem.style.transition = 'transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out)';
-        htmlItem.style.transform = '';
-        htmlItem.style.opacity = '1';
-        if (deleteBg) {
-          deleteBg.style.opacity = '0';
-          deleteBg.classList.remove('at-threshold');
-        }
+        import('../lib/store.js').then(m => m.removeFromCart(itemId));
       }
-      currentX = 0;
     });
   });
 }

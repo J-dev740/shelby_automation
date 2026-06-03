@@ -145,7 +145,7 @@ function renderDrawerContent() {
       ${items.map(item => `
         <div class="item-card" data-item-id="${item.id}">
           <div class="item-card__icon">
-            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="/menu-sprite.svg#${iconForItem(item.name)}"></use></svg>
+            <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#${iconForItem(item.name)}"></use></svg>
           </div>
           <span class="item-card__name">${item.name}</span>
           <span class="item-card__price">&#x20B9;${item.price_inr}</span>

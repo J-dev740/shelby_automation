@@ -14,6 +14,23 @@ import { save, load } from './lib/persist.js';
 
 const app = document.getElementById('app')!;
 
+// 0. Inject SVG sprite sheet inline so <use href="#id"> works cross-browser
+// External <use href="/file.svg#id"> is blocked by mobile WebKit/Chrome security
+(async () => {
+  try {
+    const res = await fetch('/menu-sprite.svg');
+    const svgText = await res.text();
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
+    wrapper.setAttribute('aria-hidden', 'true');
+    wrapper.innerHTML = svgText;
+    document.body.insertBefore(wrapper, document.body.firstChild);
+  } catch (e) {
+    // Non-critical — icons fall back to invisible
+    console.warn('[Shelby] Could not load menu sprite:', e);
+  }
+})();
+
 // 1. Show splash
 app.appendChild(renderSplash());
 

@@ -247,18 +247,91 @@
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
   aspect-ratio: 1;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  /* Entrance animation */
+  animation: heroEntrance 600ms var(--ease-spring) both;
   transition: transform var(--duration-fast) var(--ease-spring),
               box-shadow var(--duration-fast) var(--ease-out);
 }
-.hero-card:active {
-  transform: scale(0.96);
-  box-shadow: var(--shadow-sm);
+.hero-card:nth-child(2) {
+  animation-delay: 80ms;
+}
+.hero-card:active,
+.hero-card.pressing {
+  transform: scale(0.96) translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+/* Live lift during swipe-up — driven by JS inline style */
+.hero-card.swiping-up {
+  transition: none;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Tap ripple */
+.hero-card__ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(107, 39, 55, 0.12);
+  transform: scale(0);
+  pointer-events: none;
+  animation: heroRipple 500ms var(--ease-out) forwards;
+}
+@keyframes heroRipple {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Entrance keyframe */
+@keyframes heroEntrance {
+  from { opacity: 0; transform: translateY(18px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Swipe-up hint arrow — bobs endlessly until first interaction */
+.hero-card__hint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  opacity: 0.45;
+  animation: hintBob 1.6s var(--ease-in-out) infinite;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+.hero-card__hint svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-accent);
+}
+/* Second smaller chevron for depth */
+.hero-card__hint svg:last-child {
+  opacity: 0.5;
+  margin-top: -6px;
+}
+@keyframes hintBob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(-5px); }
+}
+/* Hide hint once seen */
+.hero-card.hint-done .hero-card__hint {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .hero-card__icon {
   width: 64px;
   height: 64px;
   color: var(--color-accent);
+  transition: transform 250ms var(--ease-spring);
+}
+.hero-card:active .hero-card__icon,
+.hero-card.pressing .hero-card__icon {
+  transform: scale(1.12) translateY(-3px);
 }
 .hero-card__icon svg {
   width: 100%;

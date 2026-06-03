@@ -56,16 +56,21 @@ export function renderHome(): HTMLElement {
       html += `</div></div>`;
     }
 
+    // Hint SVG chevron (used twice for bobbing depth effect)
+    const hintSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 4 18 9"/></svg>`;
+
     // 3. Sips & Bites heroes (always present)
     html += `
       <div class="home__heroes">
-        <div class="hero-card touchable" id="hero-sips">
+        <div class="hero-card touchable" id="hero-sips" role="button" aria-label="Browse Sips menu" tabindex="0">
           <div class="hero-card__icon">${ICONS.coffee}</div>
           <span class="hero-card__label">Sips</span>
+          <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
         </div>
-        <div class="hero-card touchable" id="hero-bites">
+        <div class="hero-card touchable" id="hero-bites" role="button" aria-label="Browse Bites menu" tabindex="0">
           <div class="hero-card__icon">${ICONS.food}</div>
           <span class="hero-card__label">Bites</span>
+          <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
         </div>
       </div>`;
 
@@ -87,35 +92,98 @@ export function renderHome(): HTMLElement {
 
   function bindEvents() {
     // Hero taps → open drawer
-    const sipsHero = el.querySelector('#hero-sips');
-    const bitesHero = el.querySelector('#hero-bites');
+    const sipsHero = el.querySelector('#hero-sips') as HTMLElement | null;
+    const bitesHero = el.querySelector('#hero-bites') as HTMLElement | null;
 
-    sipsHero?.addEventListener('click', () => {
-      store.drawerType = 'sips';
-      store.drawerOpen = true;
-    });
-    bitesHero?.addEventListener('click', () => {
-      store.drawerType = 'bites';
-      store.drawerOpen = true;
-    });
+    // Helpers
+    const HINT_KEY = 'shelby_hero_hint_done';
+    const hintDone = sessionStorage.getItem(HINT_KEY) === '1';
 
-    // Swipe up on heroes to open
+    function dismissHint(hero: HTMLElement) {
+      hero.classList.add('hint-done');
+      sessionStorage.setItem(HINT_KEY, '1');
+      // Also dismiss the other card
+      el.querySelectorAll('.hero-card').forEach(c => c.classList.add('hint-done'));
+    }
+
+    function spawnRipple(hero: HTMLElement, touch: Touch | MouseEvent) {
+      const rect = hero.getBoundingClientRect();
+      const x = ('clientX' in touch ? touch.clientX : (touch as Touch).clientX) - rect.left;
+      const y = ('clientY' in touch ? touch.clientY : (touch as Touch).clientY) - rect.top;
+      const size = Math.max(rect.width, rect.height) * 0.6;
+      const ripple = document.createElement('div');
+      ripple.className = 'hero-card__ripple';
+      ripple.style.cssText = `width:${size}px;height:${size}px;left:${x - size/2}px;top:${y - size/2}px;`;
+      hero.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+    }
+
+    function openHeroDrawer(type: 'sips' | 'bites') {
+      store.drawerType = type;
+      store.drawerOpen = true;
+    }
+
+    // Apply hint-done class if already seen this session
+    if (hintDone) {
+      el.querySelectorAll('.hero-card').forEach(c => c.classList.add('hint-done'));
+    }
+
     [sipsHero, bitesHero].forEach(hero => {
       if (!hero) return;
+      const type: 'sips' | 'bites' = hero.id === 'hero-sips' ? 'sips' : 'bites';
       let startY = 0;
+      let startX = 0;
+      let dragging = false;
+
+      // Click (desktop / tap that didn't become a swipe)
+      hero.addEventListener('click', (e) => {
+        spawnRipple(hero, e as MouseEvent);
+        dismissHint(hero);
+        openHeroDrawer(type);
+      });
+
       hero.addEventListener('touchstart', (e: any) => {
         startY = e.touches[0].clientY;
+        startX = e.touches[0].clientX;
+        dragging = false;
+        hero.classList.add('pressing');
+        spawnRipple(hero, e.touches[0]);
       }, { passive: true });
-      hero.addEventListener('touchmove', () => {
-        // Just empty listener if needed, or remove it entirely
+
+      hero.addEventListener('touchmove', (e: any) => {
+        const deltaY = e.touches[0].clientY - startY;
+        const deltaX = Math.abs(e.touches[0].clientX - startX);
+        // Only track upward swipes, not horizontal scrolls
+        if (deltaY < -8 && deltaX < 30) {
+          dragging = true;
+          hero.classList.remove('pressing');
+          hero.classList.add('swiping-up');
+          // Live lift — card follows finger, capped at 28px
+          const lift = Math.min(28, Math.abs(deltaY) * 0.55);
+          hero.style.transform = `translateY(-${lift}px) scale(${1 + lift * 0.002})`;
+        }
       }, { passive: true });
+
       hero.addEventListener('touchend', (e: any) => {
         const deltaY = e.changedTouches[0].clientY - startY;
+        hero.classList.remove('pressing', 'swiping-up');
+        hero.style.transform = '';
         if (deltaY < -30) {
-          if (e.cancelable) e.preventDefault(); // Prevent ghost clicks on the newly opened drawer
-          store.drawerType = hero.id === 'hero-sips' ? 'sips' : 'bites';
-          store.drawerOpen = true;
+          // Swipe up — open drawer
+          dismissHint(hero);
+          if (e.cancelable) e.preventDefault();
+          openHeroDrawer(type);
+        } else if (!dragging) {
+          // Was a tap — click handler already fired, just clean up
+          dismissHint(hero);
         }
+        dragging = false;
+      });
+
+      hero.addEventListener('touchcancel', () => {
+        hero.classList.remove('pressing', 'swiping-up');
+        hero.style.transform = '';
+        dragging = false;
       });
     });
 

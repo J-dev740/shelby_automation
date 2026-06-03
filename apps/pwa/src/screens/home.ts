@@ -6,10 +6,42 @@ export function renderHome(): HTMLElement {
   el.className = 'home';
   el.id = 'home';
 
+  // ── Persistent hero section ──────────────────────────────────────────────
+  // Built ONCE and re-appended after each dynamic re-render.
+  // This prevents CSS animations from restarting when the drawer opens/closes.
+  const hintSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 4 18 9"/></svg>`;
+  const heroesEl = document.createElement('div');
+  heroesEl.className = 'home__heroes';
+  heroesEl.innerHTML = `
+    <div class="hero-card touchable" id="hero-sips" role="button" aria-label="Browse Sips menu" tabindex="0">
+      <div class="hero-card__icon">${ICONS.coffee}</div>
+      <span class="hero-card__label">Sips</span>
+      <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
+    </div>
+    <div class="hero-card touchable" id="hero-bites" role="button" aria-label="Browse Bites menu" tabindex="0">
+      <div class="hero-card__icon">${ICONS.food}</div>
+      <span class="hero-card__label">Bites</span>
+      <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
+    </div>`;
+
+  // Bind hero interactions once (heroes are never re-created)
+  bindHeroEvents(heroesEl, el);
+
+  // ── Memoized render key ──────────────────────────────────────────────────
+  // Only the dynamic sections (orders + cart) need innerHTML updates.
+  // drawerOpen / drawerType / menuLoading changes must NOT trigger a re-render.
+  let lastRenderKey = '';
+
   function render() {
     const { activeOrders, cart } = store;
+
+    // Stable key: only re-render when cart or orders actually change
+    const renderKey = JSON.stringify({ cart, orders: activeOrders });
+    if (renderKey === lastRenderKey) return;
+    lastRenderKey = renderKey;
+
     const hasOrders = activeOrders.length > 0;
-    const hasCart = cart.length > 0;
+    const hasCart   = cart.length > 0;
 
     let html = '';
 
@@ -45,7 +77,7 @@ export function renderHome(): HTMLElement {
               Remove
             </div>
             <span class="home__cart-item-name">${item.name}</span>
-            <span class="home__cart-item-price">₹${item.price_inr * item.qty}</span>
+            <span class="home__cart-item-price">&#x20B9;${item.price_inr * item.qty}</span>
             <div class="qty-stepper">
               <button class="qty-stepper__btn" data-action="dec" data-id="${item.itemId}">${ICONS.minus}</button>
               <span class="qty-stepper__count">${item.qty}</span>
@@ -56,227 +88,20 @@ export function renderHome(): HTMLElement {
       html += `</div></div>`;
     }
 
-    // Hint SVG chevron (used twice for bobbing depth effect)
-    const hintSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 4 18 9"/></svg>`;
-
-    // 3. Sips & Bites heroes (always present)
-    html += `
-      <div class="home__heroes">
-        <div class="hero-card touchable" id="hero-sips" role="button" aria-label="Browse Sips menu" tabindex="0">
-          <div class="hero-card__icon">${ICONS.coffee}</div>
-          <span class="hero-card__label">Sips</span>
-          <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
-        </div>
-        <div class="hero-card touchable" id="hero-bites" role="button" aria-label="Browse Bites menu" tabindex="0">
-          <div class="hero-card__icon">${ICONS.food}</div>
-          <span class="hero-card__label">Bites</span>
-          <div class="hero-card__hint" aria-hidden="true">${hintSVG}${hintSVG}</div>
-        </div>
-      </div>`;
-
+    // Inject dynamic sections (orders + cart only — heroes are NOT in this string)
     el.innerHTML = html;
-    
-    // Add dynamic padding class
-    if (hasCart) {
-      el.classList.add('has-cart');
-    } else {
-      el.classList.remove('has-cart');
-    }
 
-    // 4. Order confirmation bar (if cart has items) — appended to body, not inside .home
+    // Re-append the persistent heroes node (it was detached by innerHTML = ...)
+    el.appendChild(heroesEl);
+
+    // has-cart class
+    el.classList.toggle('has-cart', hasCart);
+
+    // 3. Order confirmation bar (appended to body)
     renderConfirmationBar(hasCart);
 
-    // Bind events
-    bindEvents();
-  }
-
-  function bindEvents() {
-    // Hero taps → open drawer
-    const sipsHero = el.querySelector('#hero-sips') as HTMLElement | null;
-    const bitesHero = el.querySelector('#hero-bites') as HTMLElement | null;
-
-    // Helpers
-    const HINT_KEY = 'shelby_hero_hint_done';
-    const hintDone = sessionStorage.getItem(HINT_KEY) === '1';
-
-    function dismissHint(hero: HTMLElement) {
-      hero.classList.add('hint-done');
-      sessionStorage.setItem(HINT_KEY, '1');
-      // Also dismiss the other card
-      el.querySelectorAll('.hero-card').forEach(c => c.classList.add('hint-done'));
-    }
-
-    function spawnRipple(hero: HTMLElement, touch: Touch | MouseEvent) {
-      const rect = hero.getBoundingClientRect();
-      const x = ('clientX' in touch ? touch.clientX : (touch as Touch).clientX) - rect.left;
-      const y = ('clientY' in touch ? touch.clientY : (touch as Touch).clientY) - rect.top;
-      const size = Math.max(rect.width, rect.height) * 0.6;
-      const ripple = document.createElement('div');
-      ripple.className = 'hero-card__ripple';
-      ripple.style.cssText = `width:${size}px;height:${size}px;left:${x - size/2}px;top:${y - size/2}px;`;
-      hero.appendChild(ripple);
-      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
-    }
-
-    function openHeroDrawer(type: 'sips' | 'bites') {
-      store.drawerType = type;
-      store.drawerOpen = true;
-    }
-
-    // Apply hint-done class if already seen this session
-    if (hintDone) {
-      el.querySelectorAll('.hero-card').forEach(c => c.classList.add('hint-done'));
-    }
-
-    [sipsHero, bitesHero].forEach(hero => {
-      if (!hero) return;
-      const type: 'sips' | 'bites' = hero.id === 'hero-sips' ? 'sips' : 'bites';
-      let startY = 0;
-      let startX = 0;
-      let dragging = false;
-
-      // Click (desktop / tap that didn't become a swipe)
-      hero.addEventListener('click', (e) => {
-        spawnRipple(hero, e as MouseEvent);
-        dismissHint(hero);
-        openHeroDrawer(type);
-      });
-
-      hero.addEventListener('touchstart', (e: any) => {
-        startY = e.touches[0].clientY;
-        startX = e.touches[0].clientX;
-        dragging = false;
-        hero.classList.add('pressing');
-        spawnRipple(hero, e.touches[0]);
-      }, { passive: true });
-
-      hero.addEventListener('touchmove', (e: any) => {
-        const deltaY = e.touches[0].clientY - startY;
-        const deltaX = Math.abs(e.touches[0].clientX - startX);
-        // Only track upward swipes, not horizontal scrolls
-        if (deltaY < -8 && deltaX < 30) {
-          dragging = true;
-          hero.classList.remove('pressing');
-          hero.classList.add('swiping-up');
-          // Live lift — card follows finger, capped at 28px
-          const lift = Math.min(28, Math.abs(deltaY) * 0.55);
-          hero.style.transform = `translateY(-${lift}px) scale(${1 + lift * 0.002})`;
-        }
-      }, { passive: true });
-
-      hero.addEventListener('touchend', (e: any) => {
-        const deltaY = e.changedTouches[0].clientY - startY;
-        hero.classList.remove('pressing', 'swiping-up');
-        hero.style.transform = '';
-        if (deltaY < -30) {
-          // Swipe up — open drawer
-          dismissHint(hero);
-          if (e.cancelable) e.preventDefault();
-          openHeroDrawer(type);
-        } else if (!dragging) {
-          // Was a tap — click handler already fired, just clean up
-          dismissHint(hero);
-        }
-        dragging = false;
-      });
-
-      hero.addEventListener('touchcancel', () => {
-        hero.classList.remove('pressing', 'swiping-up');
-        hero.style.transform = '';
-        dragging = false;
-      });
-    });
-
-    // Qty stepper buttons
-    el.querySelectorAll('.qty-stepper__btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (navigator.vibrate) navigator.vibrate(10);
-        const target = e.currentTarget as HTMLElement;
-        const id = target.dataset.id!;
-        const action = target.dataset.action!;
-        if (action === 'inc') updateQty(id, 1);
-        else updateQty(id, -1);
-        // Pop the qty count
-        const stepper = target.closest('.qty-stepper');
-        const countEl = stepper?.querySelector('.qty-stepper__count') as HTMLElement | null;
-        if (countEl) {
-          countEl.classList.remove('qty-pop');
-          void countEl.offsetWidth;
-          countEl.classList.add('qty-pop');
-          countEl.addEventListener('animationend', () => countEl.classList.remove('qty-pop'), { once: true });
-        }
-      });
-    });
-
-    // Order card taps → side drawer
-    el.querySelectorAll('.order-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const orderId = (card as HTMLElement).dataset.orderId;
-        const order = store.activeOrders.find(o => o.id === orderId);
-        if (order) {
-          store.sideDrawerOrder = order;
-        }
-      });
-    });
-
-    // Swipe right to delete from cart
-    el.querySelectorAll('.home__cart-item').forEach(item => {
-      let startX = 0;
-      let currentX = 0;
-      let didCrossThreshold = false;
-      const htmlItem = item as HTMLElement;
-      const deleteBg = htmlItem.querySelector('.home__cart-item-delete-bg') as HTMLElement | null;
-
-      htmlItem.addEventListener('touchstart', (e: any) => {
-        startX = e.touches[0].clientX;
-        currentX = 0;
-        didCrossThreshold = false;
-        htmlItem.style.transition = 'none';
-        if (deleteBg) deleteBg.classList.remove('at-threshold');
-      }, { passive: true });
-      htmlItem.addEventListener('touchmove', (e: any) => {
-        const deltaX = e.touches[0].clientX - startX;
-        currentX = Math.max(0, deltaX);
-        htmlItem.style.transform = `translateX(${currentX}px)`;
-        htmlItem.style.opacity = String(Math.max(0.3, 1 - (currentX / 120)));
-        // Reveal delete bg proportionally
-        if (deleteBg) {
-          deleteBg.style.opacity = String(Math.min(1, currentX / 80));
-          // Wobble at threshold
-          if (currentX >= 80 && !didCrossThreshold) {
-            didCrossThreshold = true;
-            deleteBg.classList.add('at-threshold');
-            if (navigator.vibrate) navigator.vibrate(12);
-          } else if (currentX < 80 && didCrossThreshold) {
-            didCrossThreshold = false;
-            deleteBg.classList.remove('at-threshold');
-          }
-        }
-      }, { passive: true });
-      htmlItem.addEventListener('touchend', () => {
-        if (currentX > 80) {
-          // Collapse animation before removing
-          htmlItem.style.transition = '';
-          htmlItem.style.transform = '';
-          htmlItem.style.opacity = '';
-          htmlItem.classList.add('collapsing');
-          if (navigator.vibrate) navigator.vibrate(20);
-          setTimeout(() => {
-            import('../lib/store.js').then(m => m.removeFromCart(htmlItem.dataset.itemId!));
-          }, 240);
-        } else {
-          htmlItem.style.transition = 'transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out)';
-          htmlItem.style.transform = '';
-          htmlItem.style.opacity = '1';
-          if (deleteBg) {
-            deleteBg.style.opacity = '0';
-            deleteBg.classList.remove('at-threshold');
-          }
-        }
-        currentX = 0;
-      });
-    });
+    // Bind dynamic section events (cart swipe, qty steppers, order cards)
+    bindDynamicEvents(el);
   }
 
   // Subscribe to store changes
@@ -284,6 +109,178 @@ export function renderHome(): HTMLElement {
   render();
 
   return el;
+}
+
+// ── bindHeroEvents: wired ONCE to the persistent heroesEl node ──────────────
+function bindHeroEvents(heroesEl: HTMLElement, _homeEl: HTMLElement) {
+  const HINT_KEY = 'shelby_hero_hint_done';
+
+  function dismissHint() {
+    heroesEl.querySelectorAll('.hero-card').forEach(c => c.classList.add('hint-done'));
+    sessionStorage.setItem(HINT_KEY, '1');
+  }
+
+  function spawnRipple(hero: HTMLElement, clientX: number, clientY: number) {
+    const rect = hero.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 0.6;
+    const ripple = document.createElement('div');
+    ripple.className = 'hero-card__ripple';
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${clientX - rect.left - size / 2}px;top:${clientY - rect.top - size / 2}px;`;
+    hero.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+  }
+
+  // Apply hint-done if already dismissed this session
+  if (sessionStorage.getItem(HINT_KEY) === '1') {
+    heroesEl.querySelectorAll('.hero-card').forEach(c => c.classList.add('hint-done'));
+  }
+
+  heroesEl.querySelectorAll<HTMLElement>('.hero-card').forEach(hero => {
+    const type: 'sips' | 'bites' = hero.id === 'hero-sips' ? 'sips' : 'bites';
+    let startY = 0;
+    let startX = 0;
+    let dragging = false;
+
+    function openDrawer() {
+      store.drawerType = type;
+      store.drawerOpen = true;
+    }
+
+    hero.addEventListener('click', (e) => {
+      spawnRipple(hero, e.clientX, e.clientY);
+      dismissHint();
+      openDrawer();
+    });
+
+    hero.addEventListener('touchstart', (e: any) => {
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+      dragging = false;
+      hero.classList.add('pressing');
+      spawnRipple(hero, e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    hero.addEventListener('touchmove', (e: any) => {
+      const deltaY = e.touches[0].clientY - startY;
+      const deltaX = Math.abs(e.touches[0].clientX - startX);
+      if (deltaY < -8 && deltaX < 30) {
+        dragging = true;
+        hero.classList.remove('pressing');
+        hero.classList.add('swiping-up');
+        const lift = Math.min(28, Math.abs(deltaY) * 0.55);
+        hero.style.transform = `translateY(-${lift}px) scale(${1 + lift * 0.002})`;
+      }
+    }, { passive: true });
+
+    hero.addEventListener('touchend', (e: any) => {
+      const deltaY = e.changedTouches[0].clientY - startY;
+      hero.classList.remove('pressing', 'swiping-up');
+      hero.style.transform = '';
+      if (deltaY < -30) {
+        dismissHint();
+        if (e.cancelable) e.preventDefault();
+        openDrawer();
+      } else if (!dragging) {
+        dismissHint();
+      }
+      dragging = false;
+    });
+
+    hero.addEventListener('touchcancel', () => {
+      hero.classList.remove('pressing', 'swiping-up');
+      hero.style.transform = '';
+      dragging = false;
+    });
+  });
+}
+
+// ── bindDynamicEvents: wired on each render to cart/order nodes ──────────────
+function bindDynamicEvents(el: HTMLElement) {
+  // Qty stepper buttons
+  el.querySelectorAll('.qty-stepper__btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const target = e.currentTarget as HTMLElement;
+      const id = target.dataset.id!;
+      const action = target.dataset.action!;
+      if (action === 'inc') updateQty(id, 1);
+      else updateQty(id, -1);
+      const stepper = target.closest('.qty-stepper');
+      const countEl = stepper?.querySelector('.qty-stepper__count') as HTMLElement | null;
+      if (countEl) {
+        countEl.classList.remove('qty-pop');
+        void countEl.offsetWidth;
+        countEl.classList.add('qty-pop');
+        countEl.addEventListener('animationend', () => countEl.classList.remove('qty-pop'), { once: true });
+      }
+    });
+  });
+
+  // Order card taps → side drawer
+  el.querySelectorAll('.order-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const orderId = (card as HTMLElement).dataset.orderId;
+      const order = store.activeOrders.find(o => o.id === orderId);
+      if (order) store.sideDrawerOrder = order;
+    });
+  });
+
+  // Swipe right to delete from cart
+  el.querySelectorAll('.home__cart-item').forEach(item => {
+    let startX = 0;
+    let currentX = 0;
+    let didCrossThreshold = false;
+    const htmlItem = item as HTMLElement;
+    const deleteBg = htmlItem.querySelector('.home__cart-item-delete-bg') as HTMLElement | null;
+
+    htmlItem.addEventListener('touchstart', (e: any) => {
+      startX = e.touches[0].clientX;
+      currentX = 0;
+      didCrossThreshold = false;
+      htmlItem.style.transition = 'none';
+      if (deleteBg) deleteBg.classList.remove('at-threshold');
+    }, { passive: true });
+
+    htmlItem.addEventListener('touchmove', (e: any) => {
+      const deltaX = e.touches[0].clientX - startX;
+      currentX = Math.max(0, deltaX);
+      htmlItem.style.transform = `translateX(${currentX}px)`;
+      htmlItem.style.opacity = String(Math.max(0.3, 1 - (currentX / 120)));
+      if (deleteBg) {
+        deleteBg.style.opacity = String(Math.min(1, currentX / 80));
+        if (currentX >= 80 && !didCrossThreshold) {
+          didCrossThreshold = true;
+          deleteBg.classList.add('at-threshold');
+          if (navigator.vibrate) navigator.vibrate(12);
+        } else if (currentX < 80 && didCrossThreshold) {
+          didCrossThreshold = false;
+          deleteBg.classList.remove('at-threshold');
+        }
+      }
+    }, { passive: true });
+
+    htmlItem.addEventListener('touchend', () => {
+      if (currentX > 80) {
+        htmlItem.style.transition = '';
+        htmlItem.style.transform = '';
+        htmlItem.style.opacity = '';
+        htmlItem.classList.add('collapsing');
+        if (navigator.vibrate) navigator.vibrate(20);
+        setTimeout(() => {
+          import('../lib/store.js').then(m => m.removeFromCart(htmlItem.dataset.itemId!));
+        }, 240);
+      } else {
+        htmlItem.style.transition = 'transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out)';
+        htmlItem.style.transform = '';
+        htmlItem.style.opacity = '1';
+        if (deleteBg) {
+          deleteBg.style.opacity = '0';
+          deleteBg.classList.remove('at-threshold');
+        }
+      }
+      currentX = 0;
+    });
+  });
 }
 
 function renderConfirmationBar(hasCart: boolean) {

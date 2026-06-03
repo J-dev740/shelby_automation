@@ -18,7 +18,13 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
     body { 
-      background: #E8DCC8; 
+      background-color: #E8DCC8;
+      background-image:
+        repeating-linear-gradient(47deg, transparent 0px, transparent 1px, rgba(100,65,20,0.022) 1px, rgba(100,65,20,0.022) 2px),
+        repeating-linear-gradient(-43deg, transparent 0px, transparent 1px, rgba(80,48,15,0.015) 1px, rgba(80,48,15,0.015) 2px),
+        radial-gradient(ellipse at 12% 18%, rgba(255,248,225,0.60) 0%, transparent 46%),
+        radial-gradient(ellipse at 88% 82%, rgba(188,158,118,0.32) 0%, transparent 46%),
+        radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(140,108,68,0.22) 100%);
       font-family: 'Inter', system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;

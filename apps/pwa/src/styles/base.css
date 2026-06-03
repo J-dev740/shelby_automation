@@ -19,7 +19,6 @@ body {
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal);
   color: var(--color-text-primary);
-  background-color: var(--color-bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
@@ -29,18 +28,67 @@ body {
   user-select: none;
   -webkit-user-select: none;
   position: relative;
+
+  /*
+   * Craft paper / parchment texture — pure CSS, zero network requests,
+   * works on all mobile browsers including iOS Safari 12+
+   *
+   * Layer order (top → bottom):
+   *  1. Fine 47° grain lines   — microscopic diagonal strokes
+   *  2. Fine -43° grain lines  — cross-hatch to thicken grain
+   *  3-5. Organic cloud patches — paper's natural tonal variation
+   *  6. Vignette               — darker edges like real paper/cardboard
+   *  7. Base solid color       — the warm parchment ground
+   */
+  background-color: #E8DCC8;
+  background-image:
+    repeating-linear-gradient(
+      47deg,
+      transparent 0px,
+      transparent 1px,
+      rgba(100, 65, 20, 0.022) 1px,
+      rgba(100, 65, 20, 0.022) 2px
+    ),
+    repeating-linear-gradient(
+      -43deg,
+      transparent 0px,
+      transparent 1px,
+      rgba(80, 48, 15, 0.015) 1px,
+      rgba(80, 48, 15, 0.015) 2px
+    ),
+    radial-gradient(ellipse at 12% 18%, rgba(255, 248, 225, 0.60) 0%, transparent 46%),
+    radial-gradient(ellipse at 88% 82%, rgba(188, 158, 118, 0.32) 0%, transparent 46%),
+    radial-gradient(ellipse at 52% 42%, rgba(238, 222, 196, 0.28) 0%, transparent 52%),
+    radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(140, 108, 68, 0.22) 100%);
 }
-/* Craft paper texture — SVG noise filter rendered once on GPU, zero network */
+
+/* Extra grain layer via ::after — multiplied on top, GPU composited */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
-  opacity: 0.35;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  mix-blend-mode: multiply;
+  opacity: 1;
+  background-image:
+    repeating-linear-gradient(
+      92deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(90, 58, 18, 0.010) 3px,
+      rgba(90, 58, 18, 0.010) 4px
+    ),
+    repeating-linear-gradient(
+      177deg,
+      transparent 0px,
+      transparent 4px,
+      rgba(70, 44, 12, 0.008) 4px,
+      rgba(70, 44, 12, 0.008) 5px
+    );
 }
+
+/* All direct children of body sit above the grain overlay */
+body > * { position: relative; z-index: 1; }
 
 
 #app {

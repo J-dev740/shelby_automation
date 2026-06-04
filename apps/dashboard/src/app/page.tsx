@@ -13,6 +13,7 @@ import { SettingsPanel } from '../components/SettingsPanel';
 import { OrderCard } from '../components/OrderCard';
 import { OrderDetailsDrawer } from '../components/OrderDetailsDrawer';
 import { HandoffRow } from '../components/HandoffRow';
+import { HistoryTab } from '../components/HistoryTab';
 
 export default function Dashboard() {
   // Auth State
@@ -24,7 +25,7 @@ export default function Dashboard() {
 
   // Navigation & UI State
   const [activeTab, setActiveTab] = useState<'kanban' | 'handoff' | 'settings' | 'history'>('kanban');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   // Data State
@@ -462,7 +463,7 @@ export default function Dashboard() {
         {activeTab === 'settings' ? (
           <SettingsPanel settings={settings} updateSetting={updateSetting} currentUser={currentUser} />
         ) : activeTab === 'history' ? (
-          <div className="text-zinc-400 p-8 text-center w-full">History view pending implementation...</div>
+          <HistoryTab onSelectOrder={setSelectedOrder} />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 w-full h-full max-h-full">
             {/* ACTION CENTER (col-span-8) */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChefHat, RefreshCw, Power, Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { ChefHat, RefreshCw, Power, Settings as SettingsIcon, LogOut, Clock } from 'lucide-react';
 import { SystemSettings } from '../types';
 
 interface DashboardHeaderProps {
@@ -47,8 +47,16 @@ export function DashboardHeader({
           <span className="text-xs text-zinc-400 font-mono">{lastHeartbeat.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
         <button 
+          onClick={() => setActiveTab(activeTab === 'history' ? 'kanban' : 'history')} 
+          className={`p-1.5 rounded-lg transition-colors border ${activeTab === 'history' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+          title="History & Archive"
+        >
+          <Clock className="h-4 w-4" />
+        </button>
+        <button 
           onClick={() => setActiveTab(activeTab === 'settings' ? 'kanban' : 'settings')} 
           className={`p-1.5 rounded-lg transition-colors border ${activeTab === 'settings' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+          title="System Settings"
         >
           <SettingsIcon className="h-4 w-4" />
         </button>

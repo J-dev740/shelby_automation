@@ -4,9 +4,9 @@ import { Order, OrderItem } from '../types';
 interface OrderCardProps {
   order: Order;
   compact?: boolean;
-  onAction: () => void;
-  actionLabel: string;
-  actionColor: string;
+  onAction?: () => void;
+  actionLabel?: string;
+  actionColor?: string;
   onClick: () => void;
 }
 
@@ -38,12 +38,14 @@ export function OrderCard({ order, compact = false, onAction, actionLabel, actio
         <div className="text-right hidden md:block">
            <p className="text-xs font-mono text-zinc-400">{order.promised_eta_min}m ETA</p>
         </div>
-        <button
-          onClick={(e) => { e.stopPropagation(); onAction(); }}
-          className={`px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-bold text-xs shadow-md transition-transform active:scale-95 ${actionColor}`}
-        >
-          {actionLabel}
-        </button>
+        {actionLabel && actionColor && onAction && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAction(); }}
+            className={`px-4 md:px-5 py-2 md:py-2.5 rounded-lg font-bold text-xs shadow-md transition-transform active:scale-95 ${actionColor}`}
+          >
+            {actionLabel}
+          </button>
+        )}
       </div>
     </div>
   );

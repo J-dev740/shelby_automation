@@ -132,15 +132,20 @@ export function POSModal({ isOpen, onClose, onOrderPlaced }: POSModalProps) {
 
     try {
       // 1. Upsert customer by phone (or use a walk-in placeholder)
-      const phone = customerPhone.trim() || '+910000000000'; // Walk-in placeholder
+      const rawPhone = customerPhone.trim();
+      // Normalize to E.164: if user typed just digits, prepend +91
+      let phone = rawPhone || '+910000000000'; // Walk-in placeholder
+      if (phone && !phone.startsWith('+')) {
+        phone = `+91${phone.replace(/\D/g, '')}`;
+      }
       const name = customerName.trim() || 'Walk-in Customer';
 
-      // Check if customer exists
+      // Check if customer exists (use .maybeSingle() to avoid 406 when 0 rows)
       const { data: existingCustomer } = await supabase
         .from('customers')
         .select('id')
         .eq('phone_e164', phone)
-        .single();
+        .maybeSingle();
 
       let customerId: string;
       if (existingCustomer) {
@@ -155,7 +160,7 @@ export function POSModal({ isOpen, onClose, onOrderPlaced }: POSModalProps) {
           .insert({ phone_e164: phone, display_name: name })
           .select('id')
           .single();
-        if (custErr || !newCustomer) throw new Error('Failed to create customer');
+        if (custErr || !newCustomer) throw new Error(`Failed to create customer: ${custErr?.message || 'Unknown error'}`);
         customerId = newCustomer.id;
       }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { AlertTriangle, ChefHat, RefreshCw, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, ChefHat, RefreshCw, ArrowRight, CheckCircle2, Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 // Types
@@ -14,6 +14,8 @@ import { OrderCard } from '../components/OrderCard';
 import { OrderDetailsDrawer } from '../components/OrderDetailsDrawer';
 import { HandoffRow } from '../components/HandoffRow';
 import { HistoryTab } from '../components/HistoryTab';
+import { AudioAlert } from '../components/AudioAlert';
+import { POSModal } from '../components/POSModal';
 
 export default function Dashboard() {
   // Auth State
@@ -27,6 +29,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'kanban' | 'handoff' | 'settings' | 'history'>('kanban');
   const [searchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showPOS, setShowPOS] = useState(false);
 
   // Data State
   const [orders, setOrders] = useState<Order[]>([]);
@@ -448,6 +451,7 @@ export default function Dashboard() {
   // ---------------------------------------------------------------------------
   return (
     <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-amber-500 selection:text-zinc-950 overflow-hidden">
+      <AudioAlert newOrderCount={getKanbanOrders('new').length} />
       <DashboardHeader 
         loadingData={loadingData}
         settings={settings}
@@ -474,6 +478,13 @@ export default function Dashboard() {
                   Action Center
                 </h2>
                 <div className="flex gap-2">
+                  <button 
+                    onClick={() => setShowPOS(true)}
+                    className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-400 text-white text-[10px] font-bold px-2.5 py-1 rounded-md transition-colors shadow-sm"
+                  >
+                    <Plus className="h-3 w-3" />
+                    New Order
+                  </button>
                   {handoffSessions.length > 0 && (
                     <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md animate-pulse">
                       {handoffSessions.length} Handoffs
@@ -551,6 +562,13 @@ export default function Dashboard() {
         setSelectedOrder={setSelectedOrder}
         updateOrderStatus={updateOrderStatus}
         markOrderPaid={markOrderPaid}
+      />
+
+      {/* POS Modal */}
+      <POSModal 
+        isOpen={showPOS}
+        onClose={() => setShowPOS(false)}
+        onOrderPlaced={() => fetchData()}
       />
     </div>
   );

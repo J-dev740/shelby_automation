@@ -562,6 +562,7 @@ export default function Dashboard() {
         setSelectedOrder={setSelectedOrder}
         updateOrderStatus={updateOrderStatus}
         markOrderPaid={markOrderPaid}
+        onOrderUpdated={() => fetchData()}
       />
 
       {/* POS Modal */}

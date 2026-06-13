@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
-import { User, X, Printer, Ban, AlertTriangle } from 'lucide-react';
+import { User, X, Printer, Ban, AlertTriangle, Pencil } from 'lucide-react';
 import { Order } from '../types';
+import { EditOrderModal } from './EditOrderModal';
 
 interface OrderDetailsDrawerProps {
   selectedOrder: Order | null;
   setSelectedOrder: (order: Order | null) => void;
   updateOrderStatus: (orderId: string, newState: Order['state']) => void;
   markOrderPaid: (orderId: string) => void;
+  onOrderUpdated: () => void;
 }
 
 export function OrderDetailsDrawer({
   selectedOrder,
   setSelectedOrder,
   updateOrderStatus,
-  markOrderPaid
+  markOrderPaid,
+  onOrderUpdated
 }: OrderDetailsDrawerProps) {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
   if (!selectedOrder) return null;
 
@@ -30,6 +34,7 @@ export function OrderDetailsDrawer({
   };
 
   const isActive = ['new', 'accepted', 'preparing', 'ready'].includes(selectedOrder.state);
+  const isEditable = ['new', 'accepted', 'preparing'].includes(selectedOrder.state);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end md:justify-end justify-center items-end md:items-stretch">
@@ -168,7 +173,16 @@ export function OrderDetailsDrawer({
             <DrawerActionButton label="Complete Order" color="bg-emerald-500 hover:bg-emerald-400 text-zinc-950" onClick={() => updateOrderStatus(selectedOrder.id, 'completed')} />
           )}
 
-          {/* Secondary Actions: Print & Cancel */}
+          {/* Secondary Actions: Edit, Print & Cancel */}
+          {isEditable && (
+            <button 
+              onClick={() => setShowEdit(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-semibold text-sm transition-colors border border-amber-500/20 hover:border-amber-500/40"
+            >
+              <Pencil className="h-4 w-4" />
+              Edit Order Items
+            </button>
+          )}
           <div className="flex gap-2">
             <button 
               onClick={handlePrint}
@@ -189,6 +203,20 @@ export function OrderDetailsDrawer({
           </div>
         </div>
       </div>
+
+      {/* Edit Order Modal */}
+      {selectedOrder && (
+        <EditOrderModal
+          order={selectedOrder}
+          isOpen={showEdit}
+          onClose={() => setShowEdit(false)}
+          onOrderUpdated={() => {
+            setShowEdit(false);
+            setSelectedOrder(null);
+            onOrderUpdated();
+          }}
+        />
+      )}
     </div>
   );
 }
